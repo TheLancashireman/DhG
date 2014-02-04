@@ -1,0 +1,129 @@
+Database structure:
+===================
+
+In a given base directory for a family...
+Directory : Surname
+File: ForenamesSurname-id.card
+
+The id is a number from 1 upwards that is unique throughout the database.
+
+Examples:
+---------
+
+Haworth/DavidHaworth-42.card
+Edmondson/JamesWilliamEdmondson-123.card
+
+Contents of file:
+
+Header:
+=======
+Name: Forenames Surname
+Uniq: <positive number that is unique throughaout the database>
+Male|Female
+Father: Forenames Surname [Uniq]
+Mother: Forenames Surname [Uniq]
+Note: some text
+| continuation line
+
+Use _ for unknown names.
+
+Timeline
+========
+YYYY-MM-DD  EventType
++InfoType   Supplementary information for previous event
+
+EventTypes
+----------
+Birth
+Baptism
+Marriage  (spouse name on remainder of line)
+Census
+Death
+Burial
+Misc
+Other
+
+Supplementary Info
+------------------
++Abode
++After       = earliest limit for an approximate date
++Age
++Before      = latest limit for an approximate date
++Birthplace 
++Disability
++Informant
++Note
++Occupation
++Place
++Source
++Theory      = if there's something odd, this is what I think happened
++Todo
++What        = exact information for a "Misc" or "Other" event.
+
++Source  description of source
+-File  FileType   File name (no path)
+-URL   [URL]
+-Transcript
+| continuation lines
+-Note
+
+FileType
+--------
+Transcript  transcript of (relevant part of) given document
+Image       image of given document
+Photo       photograph
+
+Date format
+-----------
+YYYY-MM-DD    Exact date
+YYYY-MM       Month known but not day
+YYYY          Year known but not month or day
+YYYY-MM-DD~   Approximate date
+YYYY-MM~      Year known, month approximate.
+YYYY~         Approximate year known
+YYYY-Qq       Quarter known. Q=letter, q=1,2,3,4
+?             Date not known
+
+
+Output
+======
+
+l - list of all people
+r - print parents, siblings and children of specified person
+d - print descendent tree of specified person  (see sample below)
+a - print ancestor tree of specified person (see sample below)
+s - search for matching persons (print all people that contain all the words)
+
+Descendent Tree:
+
+- Joseph Haworth
+    = Jane Thornton
+      - Mary Ann Haworth
+      - Mary Haworth
+      - Elizabeth Haworth
+      - Thomas Haworth
+      - William Haworth
+      - Catherine Haworth
+    = Elizabeth X
+      - Jane Haworth
+      - Henry Haworth
+      - Joseph Haworth
+      - Edwin Haworth
+            = Nancy Hooson
+              - Mary Elizabeth Haworth
+              - Annie Haworth
+              - Joseph Haworth
+              - John Haworth
+              - Clara Haworth
+              - Herbert Haworth
+            = Mary Jane Gregory
+              - Florrie Haworth
+      - Ann Haworth
+
+Ancestor Tree:
+
+- John Haworth
+  ^ Edwin Haworth
+    ^ Joseph Haworth
+    + Elizabeth X
+  + Nancy Hooson

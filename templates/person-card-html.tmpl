@@ -1,0 +1,226 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+[% CARDBASE = "/family-history/cards" -%]
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="" />
+  <meta name="author" content="TheLancashireman" />
+  <meta name="generator" content="DhG" />
+
+  <link  href="/styles/family-history.css" rel="stylesheet" type="text/css" media="screen" /> 
+  <script type="text/javascript" src="/styles/family-history.js"> </script>
+
+  <title>The Lancashireman's family history</title>
+</head>
+
+<body>
+  <div>
+    <table class="pagehead">
+      <tr class="pagehead">
+        <td class="pagehead_left">
+          <h1>The Lancashireman's family history</h1>
+        </td>
+        <td class="pagehead_right">
+          <a href="http://www.forl.co.uk/graphics.php">
+            <img style="border:0; width:100px; height:100px"
+                 src="/images/forlrose01.gif"
+                 alt="Red rose of Lancashire" />
+          </a>
+        </td>
+      </tr>
+    </table>
+    <div id="menubar" />
+  </div>
+
+  <hr/>
+
+  <h1>[% name %]</h1>
+[% IF year_range != "" -%]
+  <h2>([% year_range %])</h2>
+[% END -%]
+  <hr/>
+
+  <table class="general-info">
+    <tr class="general-info">
+      <td class="general-info-caption">
+        Father:
+      </td>
+      <td class="general-info-value">
+[% IF father_file == "" -%]
+        [% father %]
+[% ELSE -%]
+        <a href="[% CARDBASE %]/[% father_file %].html">[% father %]</a>
+[% END -%]
+      </td>
+    </tr>
+    <tr class="general-info">
+      <td class="general-info-caption">
+        Mother:
+      </td>
+      <td class="general-info-value">
+[% IF mother_file == "" -%]
+        [% mother %]
+[% ELSE -%]
+        <a href="[% CARDBASE %]/[% mother_file %].html">[% mother %]</a>
+[% END -%]
+      </td>
+    </tr>
+  </table>
+
+  <table class="family">
+    <tr class="family">
+      <td class="siblings">
+        <h4>Siblings:</h4>
+[% IF n_sibs > 0 -%]
+        <ul class="siblings">
+[%   other_i = 0 -%]
+[%   other_par.0 = "" -%]
+[%   other_rel.0 = "" -%]
+[%   other_file.0 = "" -%]
+[%   s = 0 -%]
+[%   WHILE s < n_sibs -%]
+          <li class="siblings">
+[%     IF sibs_file.$s == "" -%]
+            [% sibs.$s -%]
+[%     ELSE -%]
+            <a href="[% CARDBASE %]/[% sibs_file.$s %].html">[% sibs.$s %]</a>[% -%]
+[%     END -%]
+[%     IF sibs_other_rel.$s != "" -%]
+[%       IF sibs_other.$s != other_par.$other_i -%]
+[%         other_i = other_i + 1 -%]
+[%         other_par.$other_i = sibs_other.$s -%]
+[%         other_rel.$other_i = sibs_other_rel.$s -%]
+[%         other_file.$other_i = sibs_other_file.$s -%]
+[%       END -%]
+[%        %]<sup>[% other_i %]</sup>
+[%     ELSE -%]
+
+[%     END -%]
+          </li>
+[%     s = s + 1 -%]
+[%   END -%]
+        </ul>
+[%   IF other_i > 0 -%]
+        Other parents of half-siblings:<br/>
+[%     s = 0 -%]
+[%     WHILE s < other_i -%]
+[%       s = s + 1 -%]
+        <sup>[% s %]</sup>[% other_rel.$s %]: [% -%]
+[%       IF other_file.$s == "" -%]
+        [% other_par.$s %]<br/>
+[%       ELSE -%]
+        <a href="[% CARDBASE %]/[% other_file.$s %].html">[% other_par.$s %]</a><br/>
+[%       END -%]
+[%     END -%]
+[%   END -%]
+
+[% END -%]
+      </td>
+      <td class="children">
+        <h4>Children:</h4>
+[% IF children_priv -%]
+        <a href="/family-history/private.html">Private</a>
+[% ELSE -%]
+[% IF n_children > 0 -%]
+[% c = 0 -%]
+[% parent = "" -%]
+[% WHILE c < n_children -%]
+[% IF c_parent.$c != parent -%]
+[% parent = c_parent.$c -%]
+[% IF c != 0 -%]
+        </ul>
+[% END -%]
+        [% name %] + [% -%]
+[% IF c_parent_file.$c == "" -%]
+ [% c_parent.$c %]
+[% ELSE -%]
+ <a href="[% CARDBASE %]/[% c_parent_file.$c %].html">[% c_parent.$c %]</a>
+[% END -%]
+        <ul class="children">
+[% END %]
+          <li class="children">
+[% IF child_file.$c == "" -%]
+            [% children.$c %]
+[% ELSE -%]
+            <a href="[% CARDBASE %]/[% child_file.$c %].html">[% children.$c %]</a>
+[% END -%]
+          </li>
+[% c = c + 1 -%]
+[% END -%]
+        </ul>
+[% END -%]
+[% END -%]
+      </td>
+    </tr>
+  </table>
+
+  <h3>Timeline</h3>      
+  <table class="timeline">
+[% e = 0 -%]
+[% os = "even" -%]
+[% WHILE e < n_events -%]
+    <tr class="timeline">
+      <td class="timeline-date-[% os %]">
+        [% e_date.$e %]
+      </td>
+      <td class="timeline-event-[% os %]">
+        [% e_type.$e -%]
+[% IF e_spouse.$e != "" -%]
+		[%- %]<br/>
+        to [% -%]
+[% IF e_spousefile.$e == "" -%]
+            [%- e_spouse.$e -%]
+[% ELSE -%]
+            [%- %]<a href="[% CARDBASE %]/[% e_spousefile.$e %].html">[% e_spouse.$e %]</a>[% -%]
+[% END %]
+[% END -%]
+      </td>
+      <td class="timeline-info-[% os %]">
+        [% e_info.$e %]
+      </td>
+      <td class="timeline-source-[% os %]">
+        [% e_source.$e %]
+      </td>
+    </tr>
+[% e = e + 1 -%]
+[% IF ( os == "even" ); os = "odd"; ELSE; os = "even"; END -%]
+[% END -%]
+  </table>
+  <p>
+  </p>
+  <hr/>
+  <table class="pagefoot">
+    <tr class="pagefoot">
+      <td class="pagefoot_left">
+        &copy; David Haworth<br/>
+        <a href="/about.html">About this site (Impressum)</a>.
+      </td>
+      <td class="pagefoot_centre">
+        <a href="http://www.forl.co.uk/">
+          <img style="border:0; width:384px; height:60px"
+               src="/images/dont_say.gif"
+               alt="Don't say Greater Manchester, Merseyside or Cumbria when you mean Lancashire" />
+        </a>
+      </td>
+      <td class="pagefoot_right">
+        <a href="http://validator.w3.org/check?uri=referer">
+          <img src="http://www.w3.org/Icons/valid-xhtml11"
+               alt="Valid XHTML 1.1" height="31" width="88" />
+        </a>
+        <a href="http://jigsaw.w3.org/css-validator/check/referer">
+          <img style="border:0; width:88px; height:31px"
+               src="http://jigsaw.w3.org/css-validator/images/vcss-blue"
+               alt="Valid CSS!" />
+        </a>
+      </td>
+    </tr>
+  </table>
+  <hr/>
+
+</body>
+
+</html>
