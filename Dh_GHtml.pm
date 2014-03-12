@@ -27,7 +27,7 @@ sub DhG_HtmlDescTree;
 sub DhG_HtmlAhnentafel;
 
 my $tt = Template->new({
-	INCLUDE_PATH => "/data/family-history/svn/tools/DhG/templates",
+	INCLUDE_PATH => "/data/family-history/tools/DhG/templates",
 	INTERPOLATE => 0,
 }) || die "$Template::ERROR\n";
 

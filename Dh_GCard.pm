@@ -252,6 +252,11 @@ sub DhG_LoadCard
 			# Ignore blank lines
 			print STDOUT "Blank line\n" if ($DhG_DebugLevel > 99);
 		}
+		elsif ( $line eq "EOF" )
+		{
+			# Skip out of read loop if an EOF marker is found.
+			last;
+		}
 		else
 		{
 			$firstchar = substr($line, 0, 1);
@@ -500,6 +505,12 @@ sub DhG_LoadCard_All
 		{
 			chomp;
 			$line = DhG_Trim($_);
+
+			if ( $line eq "EOF" )
+			{
+				# Skip out of reading loop if an EOF marker is found.
+				last;
+			}
 
 			push(@file_lines, $line);
 		}
