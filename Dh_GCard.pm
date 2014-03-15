@@ -995,7 +995,7 @@ sub DhG_GetOffspring
 				}
 
 				# Guarantee DoB is unique
-				while ( defined $sib_dob{$odob} )
+				while ( defined $off_dob{$odob} )
 				{
 					$odob .= _;
 				}
