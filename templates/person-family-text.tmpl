@@ -1,0 +1,82 @@
+
+  Family of [% name -%]
+[% IF year_range != "" -%]
+ ([% year_range %])[% -%]
+[% END -%]
+ [[% id %]]
+
+    Father:  [% father -%]
+[% IF father_id != "" -%]
+   [[% father_id %]][% -%]
+[% END -%]
+
+    Mother:  [% mother -%]
+[% IF mother_id != "" -%]
+   [[% mother_id %]][% -%]
+[% END -%]
+
+
+[% IF n_sibs > 0 -%]
+    Siblings:
+[%   other_i = 0 -%]
+[%   other_par.0 = "" -%]
+[%   other_id.0 = "" -%]
+[%   other_rel.0 = "" -%]
+[%   other_file.0 = "" -%]
+[%   s = 0 -%]
+[%   WHILE s < n_sibs -%]
+      [% sibs.$s -%]
+[% IF sibs_id.$s != "" -%]
+   [[% sibs_id.$s %]][% -%]
+[% END -%]
+[%     IF sibs_other_rel.$s != "" -%]
+[%       IF sibs_other.$s != other_par.$other_i -%]
+[%         other_i = other_i + 1 -%]
+[%         other_par.$other_i = sibs_other.$s -%]
+[%         other_id.$other_i = sibs_other_id.$s -%]
+[%         other_rel.$other_i = sibs_other_rel.$s -%]
+[%         other_file.$other_i = sibs_other_file.$s -%]
+[%       END -%]
+[%        %] (*[% other_i %])
+[%     ELSE -%]
+
+[%     END -%]
+[%     s = s + 1 -%]
+[%   END -%]
+[%   IF other_i > 0 -%]
+
+    Other parents of half-siblings:
+[%     s = 0 -%]
+[%     WHILE s < other_i -%]
+[%       s = s + 1 -%]
+      (*[% s %]) [% other_rel.$s %]: [% other_par.$s -%]
+[% IF other_id.$s != "" -%]
+   [[% other_id.$s %]][% -%]
+[% END -%]
+
+[%     END -%]
+[%   END -%]
+[% END -%]
+[% IF n_children > 0 -%]
+
+[%   c = 0 -%]
+[%   parent = "" -%]
+[%   WHILE c < n_children -%]
+[%     IF c_parent.$c != parent -%]
+[%       parent = c_parent.$c -%]
+
+    Children of [% name %] + [% c_parent.$c -%]
+[% IF c_parent_id.$c != "" -%]
+   [[% c_parent_id.$c %]][% -%]
+[% END -%]
+
+[%     END -%]
+      [% children.$c -%]
+[% IF children_id.$c != "" -%]
+   [[% children_id.$c %]][% -%]
+[% END -%]
+
+[%     c = c + 1 -%]
+[%   END -%]
+[% END -%]
+

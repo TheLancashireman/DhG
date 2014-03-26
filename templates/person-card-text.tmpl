@@ -1,0 +1,120 @@
+[% name -%]
+[% IF year_range != "" -%]
+ ([% year_range %])[% -%]
+[% END -%]
+
+  Father:  [% father %]
+  Mother:  [% mother %]
+
+  Siblings:
+[% IF n_sibs > 0 -%]
+[%   other_i = 0 -%]
+[%   other_par.0 = "" -%]
+[%   other_rel.0 = "" -%]
+[%   other_file.0 = "" -%]
+[%   s = 0 -%]
+[%   WHILE s < n_sibs -%]
+    [% sibs.$s -%]
+[%     IF sibs_other_rel.$s != "" -%]
+[%       IF sibs_other.$s != other_par.$other_i -%]
+[%         other_i = other_i + 1 -%]
+[%         other_par.$other_i = sibs_other.$s -%]
+[%         other_rel.$other_i = sibs_other_rel.$s -%]
+[%         other_file.$other_i = sibs_other_file.$s -%]
+[%       END -%]
+[%        %](*[% other_i %])
+[%     ELSE -%]
+
+[%     END -%]
+[%     s = s + 1 -%]
+[%   END -%]
+[%   IF other_i > 0 -%]
+      Other parents of half-siblings:<br/>
+[%     s = 0 -%]
+[%     WHILE s < other_i -%]
+[%       s = s + 1 -%]
+        (*[% s %]) [% other_rel.$s %]: [% other_par.$s %]
+[%     END -%]
+[%   END -%]
+
+[% END -%]
+
+  Children:
+[% IF n_children > 0 -%]
+[%   c = 0 -%]
+[%   parent = "" -%]
+[%   WHILE c < n_children -%]
+[%     IF c_parent.$c != parent -%]
+[%       parent = c_parent.$c -%]
+    [% name %] + [% c_parent.$c %]
+[%     END %]
+      [% children.$c %]
+[%     c = c + 1 -%]
+[% END -%]
+
+  Timeline
+  <table class="timeline">
+[% e = 0 -%]
+[% os = "even" -%]
+[% WHILE e < n_events -%]
+    <tr class="timeline">
+      <td class="timeline-date-[% os %]">
+        [% e_date.$e %]
+      </td>
+      <td class="timeline-event-[% os %]">
+        [% e_type.$e -%]
+[% IF e_spouse.$e != "" -%]
+		[%- %]<br/>
+        to [% -%]
+[% IF e_spousefile.$e == "" -%]
+            [%- e_spouse.$e -%]
+[% ELSE -%]
+            [%- %]<a href="[% CARDBASE %]/[% e_spousefile.$e %].html">[% e_spouse.$e %]</a>[% -%]
+[% END %]
+[% END -%]
+      </td>
+      <td class="timeline-info-[% os %]">
+        [% e_info.$e %]
+      </td>
+      <td class="timeline-source-[% os %]">
+        [% e_source.$e %]
+      </td>
+    </tr>
+[% e = e + 1 -%]
+[% IF ( os == "even" ); os = "odd"; ELSE; os = "even"; END -%]
+[% END -%]
+  </table>
+  <p>
+  </p>
+  <hr/>
+  <table class="pagefoot">
+    <tr class="pagefoot">
+      <td class="pagefoot_left">
+        &copy; David Haworth<br/>
+        <a href="/about.html">About this site (Impressum)</a>.
+      </td>
+      <td class="pagefoot_centre">
+        <a href="http://www.forl.co.uk/">
+          <img style="border:0; width:384px; height:60px"
+               src="/images/dont_say.gif"
+               alt="Don't say Greater Manchester, Merseyside or Cumbria when you mean Lancashire" />
+        </a>
+      </td>
+      <td class="pagefoot_right">
+        <a href="http://validator.w3.org/check?uri=referer">
+          <img src="http://www.w3.org/Icons/valid-xhtml11"
+               alt="Valid XHTML 1.1" height="31" width="88" />
+        </a>
+        <a href="http://jigsaw.w3.org/css-validator/check/referer">
+          <img style="border:0; width:88px; height:31px"
+               src="http://jigsaw.w3.org/css-validator/images/vcss-blue"
+               alt="Valid CSS!" />
+        </a>
+      </td>
+    </tr>
+  </table>
+  <hr/>
+
+</body>
+
+</html>

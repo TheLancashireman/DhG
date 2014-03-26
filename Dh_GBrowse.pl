@@ -8,6 +8,7 @@
 
 use Dh_GCard;
 use Dh_GHtml;
+use Dh_GText;
 use Term::ReadLine;
 
 sub DhG_PrintHelp;
@@ -31,6 +32,7 @@ my @commands =
 	"ha",
 	"list",
 	"new",
+    "oldfamily",
 	"open",
 	"quit",
 	"reload",
@@ -153,6 +155,14 @@ while ( defined ($line = $term->readline($prompt)) )
 				}
 			}
 			elsif ( $cmd eq "family" )
+			{
+				my $uniq = DhG_GetUniq($params);
+				if ( $uniq > 0 )
+				{
+					DhG_TextFamily($uniq, "private");
+				}
+			}
+			elsif ( $cmd eq "oldfamily" )
 			{
 				my $uniq = DhG_GetUniq($params);
 				if ( $uniq > 0 )

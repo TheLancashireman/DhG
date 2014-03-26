@@ -1347,9 +1347,9 @@ sub DhG_GetCardTemplateVars
 	my ($father_id, $father_name, $father_years, $father_file, $father);
 	my ($mother_id, $mother_name, $mother_years, $mother_file, $mother);
 	my (@sibling_id, @siblings, @sib_files, $n_sibs);
-    my (@sibs_other_rel, @sibs_other_file, @sibs_other);
+    my (@sibs_other_rel, @sibs_other_file, @sibs_other, @sibs_other_id);
 	my (@child_id, @children, @child_files, $n_children, $children_priv);
-	my (@child_parent, @child_parent_rel, @child_parent_file);
+	my (@child_parent, @child_parent_id, @child_parent_rel, @child_parent_file);
 	my ($n_events, @e_date, @e_type, @e_spouse, @e_spousefile, @e_info, @e_source);
 	my ($xxid, $xxname, $xxyears);
 	my (@filelines);
@@ -1410,6 +1410,7 @@ sub DhG_GetCardTemplateVars
     @sibs_other_rel = ();
 	@sibs_other_file = ();
 	@sibs_other = ();
+	@sibs_other_id = ();
 
 	foreach $xxid ( @sibling_id )
 	{
@@ -1449,6 +1450,7 @@ sub DhG_GetCardTemplateVars
 			if ( defined $sibs_other_rel[$n_sibs] )
 			{
 				$sibs_other[$n_sibs] = $xxparent;
+				$sibs_other_id[$n_sibs] = $xxparent_id;
 				$sibs_other_file[$n_sibs] = DhG_GetFilebase($xxparent_id);
 			}
 		}
@@ -1460,6 +1462,10 @@ sub DhG_GetCardTemplateVars
 	$n_children = 0;
 	@children = ();
 	@child_files = ();
+	@child_parent = ();
+	@child_parent_id = ();
+	@child_parent_rel = ();
+	@child_parent_file = ();
 	foreach $xxid ( @child_id )
 	{
 		$children[$n_children] = DhG_GetName($xxid);
@@ -1479,6 +1485,7 @@ sub DhG_GetCardTemplateVars
 			$child_parent_rel[$n_children] = "father";
 		}
 		$child_parent[$n_children] = $xxparent;
+		$child_parent_id[$n_children] = $xxparent_id;
 		$child_parent_file[$n_children] = DhG_GetFilebase($xxparent_id);
 
 		$n_children++;
@@ -1524,39 +1531,49 @@ sub DhG_GetCardTemplateVars
 	}
 
 	# Convert all strings to XML-friendly format.
-	($name, $years, $father, $father_file, $mother, $mother_file) =
+	if ( $mode eq "html" )
+	{
+		($name, $years, $father, $father_file, $mother, $mother_file) =
 											DhG_XMLify($name, $years, $father, $father_file, $mother, $mother_file);
-	@siblings = DhG_XMLify(@siblings);
-	@sib_files = DhG_XMLify(@sib_files);
-	@sibs_other = DhG_XMLify(@sibs_other);
-	@sibs_other_rel = DhG_XMLify(@sibs_other_rel);
-	@sibs_other_file = DhG_XMLify(@sibs_other_file);
-	@children = DhG_XMLify(@children);
-	@child_files = DhG_XMLify(@child_files);
-	@child_parent = DhG_XMLify(@child_parent);
-	@child_parent_rel = DhG_XMLify(@child_parent_rel);
-	@child_parent_file = DhG_XMLify(@child_parent_file);
-	# Event data is not converted here because it may contain XML/HTML
+		@siblings = DhG_XMLify(@siblings);
+		@sib_files = DhG_XMLify(@sib_files);
+		@sibs_other = DhG_XMLify(@sibs_other);
+		@sibs_other_rel = DhG_XMLify(@sibs_other_rel);
+		@sibs_other_file = DhG_XMLify(@sibs_other_file);
+		@children = DhG_XMLify(@children);
+		@child_files = DhG_XMLify(@child_files);
+		@child_parent = DhG_XMLify(@child_parent);
+		@child_parent_rel = DhG_XMLify(@child_parent_rel);
+		@child_parent_file = DhG_XMLify(@child_parent_file);
+		# Event data is not converted here because it may contain XML/HTML
+	}
 
 	# Now we've got all the stuff, put it in the vars hash for the template.
 	my $template_vars =
 	{
 		name			=> $name,					# Name of person
+		id				=> $id,						# Id of person
 		year_range		=> $years,					# (DoB-DoD)
 		father			=> $father,					# Name of father
+		father_id		=> $father_id,				# Id of father
 		father_file		=> $father_file,			# Filename of father
 		mother			=> $mother,					# Name of mother
+		mother_id		=> $mother_id,				# Id of mother
 		mother_file		=> $mother_file,			# Filename of mother
 		n_sibs			=> $n_sibs,					# No. of siblings
 		sibs			=> \@siblings,				# Names of siblings
+		sibs_id			=> \@sibling_id,			# Ids of siblings
 		sibs_file		=> \@sib_files,				# Filenames of siblings
 		sibs_other		=> \@sibs_other,			# Other parent of siblings (if different)
+		sibs_other_id	=> \@sibs_other_id,			# Id of other parent of siblings (if different)
 		sibs_other_rel 	=> \@sibs_other_rel,		# Relationship of other parent (mother/father)
 		sibs_other_file => \@sibs_other_file,		# File of other parent
 		n_children		=> $n_children,				# No. of children
 		children		=> \@children,				# Names of children
+		children_id		=> \@child_id,				# Ids of children
 		child_file		=> \@child_files,			# Filenames of children
 		c_parent		=> \@child_parent,			# Other parent of children
+		c_parent_id		=> \@child_parent_id,		# Id of other parent of children
 		c_parent_rel	=> \@child_parent_rel,		# Relationship of other parent (mother/father)
 		c_parent_file	=> \@child_parent_file,		# Filenames of other parent
 		children_priv	=> $children_priv,			# TRUE if children are private
