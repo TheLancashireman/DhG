@@ -27,6 +27,9 @@ Note: some text
 
 Use _ for unknown names.
 
+EOF  (on a line on its own) indicates the end of parseable data. Lines after this
+     are not parsed and can be used for unformatted research notes.
+
 Timeline
 ========
 YYYY-MM-DD  EventType
