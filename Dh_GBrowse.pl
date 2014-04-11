@@ -16,6 +16,7 @@ sub DhG_PrintHelp;
 my @commands =
 (
 	"ancestors",
+    "card",
 	"close",
 	"descendants",
 	"edit",
@@ -32,7 +33,6 @@ my @commands =
 	"ha",
 	"list",
 	"new",
-    "oldfamily",
 	"open",
 	"quit",
 	"reload",
@@ -162,12 +162,12 @@ while ( defined ($line = $term->readline($prompt)) )
 					DhG_TextFamily($uniq, "private");
 				}
 			}
-			elsif ( $cmd eq "oldfamily" )
+			elsif ( $cmd eq "card" )
 			{
 				my $uniq = DhG_GetUniq($params);
 				if ( $uniq > 0 )
 				{
-					DhG_PrintFamily($uniq);
+					DhG_TextCard($uniq, "private");
 				}
 			}
 			elsif ( $cmd eq "descendants" )
