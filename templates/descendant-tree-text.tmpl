@@ -1,0 +1,11 @@
+
+  Descendants of [% title_name %][% IF title_years != "" %] ([% title_years %])[% END %]
+
+[% mylevel = -1 -%]
+[% i = 0 -%]
+[% WHILE i < nlines -%]
+[%   mylevel = level.$i -%]
+[%   j = 0; WHILE j < mylevel; "    "; j = j+1; END     %]  [% mylevel+1 %].  [% name.$i -%]
+[%   IF spouse.$i != "" -%] === [% spouse.$i %][% END %]
+[%   i= i+1 -%]
+[% END -%]
