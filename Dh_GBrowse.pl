@@ -19,7 +19,6 @@ my @commands =
     "card",
 	"close",
 	"descendants",
-	"olddescendants",
 	"edit",
 	"family",
 	"find",
@@ -177,14 +176,6 @@ while ( defined ($line = $term->readline($prompt)) )
 				if ( $uniq > 0 )
 				{
 					DhG_TextDescTree($uniq, "all");
-				}
-			}
-			elsif ( $cmd eq "olddescendants" )				# To be removed
-			{
-				my $uniq = DhG_GetUniq($params);
-				if ( $uniq > 0 )
-				{
-					DhG_PrintDescendantTree($uniq);
 				}
 			}
 			elsif ( $cmd eq "ancestors" )
