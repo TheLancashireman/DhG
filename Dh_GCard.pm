@@ -12,6 +12,7 @@ use Exporter();
 @ISA = qw(Exporter);
 @EXPORT  =
 (
+	# Data
 	DhG_FileList,		# List of all files in database
 	DhG_Fileno,			# Array mapping person ID to index in DhG_FileList
 	DhG_Name,			# Array mapping person ID to names. undef means doesn't exist.
@@ -28,6 +29,7 @@ use Exporter();
 	DhG_Death_Date,		# Array mapping person ID to their death date
 	DhG_Burial_Date,	# Array mapping person ID to their burial date
 
+	# Functions
 	DhG_LoadDatabase,
 	DhG_ClearDatabase,
 	DhG_LoadCard,
@@ -67,8 +69,6 @@ use Exporter();
 	DhG_Dump,
 	DhG_PrintAncestorTree,
 	DhG_Search,
-	DhG_OpenOutputFile,
-	DhG_CloseOutputFile,
 
 	DhG_Test
 );
@@ -2420,56 +2420,6 @@ sub DhG_GetPersonInfoLine
 	return $infoline;
 }
 
-# DhG_GetPersonInfo() - returns info (forename, surname, dob, dod) for person
-sub DhG_GetPersonInfo
-{
-	my ($name, $uniq) = @_;
-	my $id = undef;
-	my ($dob, $dod) = ("?","?");
-	my $forename = "";
-	my $surname = "unknown";
-
-	if ( $name =~ m{^([0-9])} )
-	{
-		# ID is given. If person exists, use that person, otherwise return "Unknown"
-		$id = $name;
-
-		if ( defined $DhG_Name[$id] )
-		{
-			$name = $DhG_Name[$id];
-		}
-		else
-		{
-			$id = undef;
-		}
-	}
-	else
-	{
-		# Name/Uniq give, Find the person. If not found, return "Name [Uniq]"
-		$id = DhG_FindPerson($name, $uniq);
-	}
-
-	if ( defined $id )
-	{
-		# This person exists in the database Don't format these dates!
-		$dob = $DhG_Birth_Date[$id];
-		if ( !defined $dob )
-		{
-			$dob = "?";
-		}
-
-		$dod = $DhG_Death_Date[$id];
-		if ( !defined $dod )
-		{
-			$dod = "";
-		}
-	}
-
-	($forename, $surname) = DhG_SplitName($name);
-
-	return ($forename, $surname, $dob, $dod);
-}
-
 # DhG_SplitName() - returns (forename, surname) from name
 sub DhG_SplitName
 {
@@ -2490,43 +2440,6 @@ sub DhG_SplitName
 	}
 
 	return ($forename, $surname);
-}
-
-# DhG_OpenOutputFile() opens an output file (alternative data stream)
-sub DhG_OpenOutputFile
-{
-	my ($filename) = @_;
-
-	if ( defined $outputfile_name )
-	{
-		print STDERR "DhG_OpenOutputFile: Output file is already open.\n";
-	}
-	elsif ( -e $filename )
-	{
-		print STDERR "DhG_OpenOutputFile: Output file already already exists - refusing to overwrite.\n";
-	}
-	elsif ( open(DhG_OUTPUTFILE, ">".$filename) )
-	{
-		$outputfile_name = $filename;
-	}
-	else
-	{
-		print STDERR "DhG_OpenOutputFile: Failed to open $filename for writing.\n";
-	}
-}
-
-# DhG_CloseOutputFile() closes the output file if it was open
-sub DhG_CloseOutputFile
-{
-	if ( defined $outputfile_name )
-	{
-		close(DhG_OUTPUTFILE);
-		$outputfile_name = undef;
-	}
-	else
-	{
-		print STDERR "DhG_CloseOutputFile: Output file is not open.\n";
-	}
 }
 
 # DhG_GetDebugLevel() returns the debug level

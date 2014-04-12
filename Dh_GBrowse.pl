@@ -17,7 +17,6 @@ my @commands =
 (
 	"ancestors",
     "card",
-	"close",
 	"descendants",
 	"edit",
 	"family",
@@ -33,7 +32,6 @@ my @commands =
 	"ha",
 	"list",
 	"new",
-	"open",
 	"quit",
 	"reload",
 	"search",
@@ -194,21 +192,6 @@ while ( defined ($line = $term->readline($prompt)) )
 			{
 				DhG_SetVariable($params);
 				$DBG = DhG_GetDebugLevel();
-			}
-			elsif ( $cmd eq "open" )
-			{
-				DhG_OpenOutputFile($params);
-			}
-			elsif ( $cmd eq "close" )
-			{
-				if ( $params eq "" )
-				{
-					DhG_CloseOutputFile();
-				}
-				else
-				{
-					print STDERR "Eh?\n";
-				}
 			}
 			elsif ( $cmd eq "help" )
 			{
