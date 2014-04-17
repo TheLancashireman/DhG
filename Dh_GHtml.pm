@@ -72,12 +72,13 @@ sub DhG_MultiHtmlCard
 		{
 			$fn = DhG_GetFilename($id);
 
-			if ( $fn =~ m{\/Kellys\/} )
+			if ( $fn =~ m{\/Tidswells\/} )
 			{
-				# Ignoring Kellys for now.
-				# print STDOUT "DBG: $id: $name - ignored (Kelly)!\n";
+				# Ignoring Tidswells for now.
+				# print STDOUT "DBG: $id: $name - ignored (Tidswell)!\n";
 			}
 			elsif ( $select eq "all" || !DhG_IsPrivate($id) )
+#			if ( $select eq "all" || !DhG_IsPrivate($id) )
 			{
 				DhG_HtmlCard($id, $select);
 			}
