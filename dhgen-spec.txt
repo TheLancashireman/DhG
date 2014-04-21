@@ -20,8 +20,9 @@ Header:
 Name: Forenames Surname
 Uniq: <positive number that is unique throughaout the database>
 Male|Female
-Father: Forenames Surname [Uniq]
-Mother: Forenames Surname [Uniq]
+Private|Public (optional)
+Father: Forenames Surname [Uniq] (optional)
+Mother: Forenames Surname [Uniq] (optional)
 Note: some text
 | continuation line
 

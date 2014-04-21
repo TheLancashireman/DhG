@@ -28,6 +28,8 @@ use Exporter();
 	DhG_Baptism_Date,	# Array mapping person ID to their baptism date
 	DhG_Death_Date,		# Array mapping person ID to their death date
 	DhG_Burial_Date,	# Array mapping person ID to their burial date
+	DhG_Private,		# Array of privacy flags (read from card file)
+	DhG_Private_Calc,	# Array of calculated privacy flags
 
 	# Functions
 	DhG_LoadDatabase,
@@ -183,6 +185,8 @@ sub DhG_LoadDatabase
 
 	$DhG_Name[0] = "(Unknown)";
 	$DhG_Gender[0] = "?";
+	$DhG_Private[0] = 0;
+	$DhG_Private_Calc[0] = 0;
 
 	@DhG_FileList = DhFL_FileList(@args);
 
@@ -223,6 +227,7 @@ sub DhG_LoadCard
 	my $name = undef;
 	my $uniq = undef;
 	my $gender = undef;
+	my $privacy = undef;
 	my $father_name = undef;
 	my $father_uniq = undef;
 	my $mother_name = undef;
@@ -278,6 +283,29 @@ sub DhG_LoadCard
 					if ( defined $id )
 					{
 						$DhG_Gender[$id] = $gender;
+					}
+				}
+			}
+			elsif ( $line eq "Private" || $line eq "Public" )
+			{
+				print STDOUT "Privacy line \"$line\"\n" if ($DhG_DebugLevel > 99);
+				if ( defined $privacy )
+				{
+					printf STDERR "$filename: multiple Privacy entries\n";
+				}
+				else
+				{
+					if ( $line eq "Private" )
+					{
+						$privacy = 1;
+					}
+					else
+					{
+						$privacy = 0;
+					}
+					if ( defined $id )
+					{
+						$DhG_Private[$id] = $privacy;
 					}
 				}
 			}
@@ -402,6 +430,7 @@ sub DhG_LoadCard
 					$DhG_Marriage_Dates[$id] = "";
 					$DhG_Marriage_Names[$id] = "";
 					$DhG_Marriage_Ids[$id] = "";
+					$DhG_Private[$id] = $privacy;
 
 					$stored = 1;
 				}
@@ -744,6 +773,8 @@ sub DhG_ClearDatabase
 	@DhG_Marriage_Dates = undef;
 	@DhG_Marriage_Names = undef;
 	@DhG_Marriage_Ids = undef;
+	@DhG_Private = undef;
+	@DhG_Private_Calc = undef;
 	%DhG_NameGenderMap = ();
 }
 
@@ -1021,14 +1052,21 @@ sub DhG_GetSpouses
 
 	print STDOUT "DBG: DhG_GetSpouses($id) - \"$DhG_Marriage_Ids[$id]\"\n" if ( $DhG_DebugLevel >= 110 );
 
-	my @sp_id = split /\|/,$DhG_Marriage_Ids[$id];
-
-	foreach $spouse (@sp_id)
+	if ( defined $DhG_Marriage_Ids[$id] )
 	{
-		if ( defined $spouse && $spouse ne "" )
+		my @sp_id = split /\|/,$DhG_Marriage_Ids[$id];
+
+		foreach $spouse (@sp_id)
 		{
-			push(@spouses, $spouse);
+			if ( defined $spouse && $spouse ne "" )
+			{
+				push(@spouses, $spouse);
+			}
 		}
+	}
+	else
+	{
+		print STDERR "No marriage ID string for $id $DhG_Name[$id]\n";
 	}
 
 	return @spouses;
@@ -1112,60 +1150,21 @@ sub DhG_IsAlive
 }
 
 # DhG_IsPrivate() - returns TRUE if the person is "private"
-# A person is "private" if
-#   * he is alive, or
-#   * one of his partners is alive, or
-#   * one of his siblings is alive, or
-#   * a partner of one of his siblings is alive.
 sub DhG_IsPrivate
 {
     my ($id) = @_;  # Parameter is person's ID
-	my (@sibs, $sib);
-	my (@partners, $partner);
-	my $localdbglvl = 105;
 
-	print STDOUT "DBG: DhG_IsPrivate $id ($DhG_Name[$id])" if ( $DhG_DebugLevel >= $localdbglvl );
-
-	if ( DhG_IsAlive($id) )
+	if ( defined $DhG_Private[$id] )
 	{
-		return 1;			# Person is living
+		return $DhG_Private[$id];
 	}
 
-	@partners = DhG_GetPartners($id);
-	foreach $partner (@partners)
+	if ( defined $DhG_Private_Calc[$id] )
 	{
-		print STDOUT " p$partner" if ( $DhG_DebugLevel >= $localdbglvl );
-		if ( DhG_IsAlive($partner) )
-		{
-			print STDOUT " living partner : returning TRUE\n" if ( $DhG_DebugLevel >= $localdbglvl );
-			return 1;		# Partner is living
-		}
+		return $DhG_Private_Calc[$id];
 	}
 
-	@sibs = DhG_GetSiblings($id);
-	foreach $sib (@sibs)
-	{
-		print STDOUT " s$sib" if ( $DhG_DebugLevel >= $localdbglvl );
-		if ( DhG_IsAlive($sib) )
-		{
-			print STDOUT " living sib : returning TRUE\n" if ( $DhG_DebugLevel >= $localdbglvl );
-			return 1;   	# Sibling is living
-		}
-
-		@partners = DhG_GetPartners($sib);
-		foreach $partner (@partners)
-		{
-			print STDOUT " sp$partner" if ( $DhG_DebugLevel >= $localdbglvl );
-			if ( DhG_IsAlive($partner) )
-			{
-				print STDOUT " living sib partner : returning TRUE\n" if ( $DhG_DebugLevel >= $localdbglvl );
-				return 1;   # Partner of sibling is living
-			}
-		}
-	}
-
-	print STDOUT " returning FALSE\n" if ( $DhG_DebugLevel >= $localdbglvl );
-	return 0;		# No living siblings or partners found
+	return 0;
 }
 
 # DhG_FormatDate() converts a date to the selected format.
@@ -2037,9 +2036,50 @@ sub DhG_GetUniq
 	return $result;
 }
 
+# DhG_SetRelativesPrivate - set the calculated privacy flag of all partners and siblings of a person
+sub DhG_SetRelativesPrivate
+{
+	my ($id, $priv) = @_;
+	my (@sibs, $sib);
+	my (@partners, $partner);
+	my $localdbglvl = 999;
 
-# DhG_AnalyseRelations() finds the IDs of mothers and fathers of all persons
-# NOTE: this function is now badly named because all it does is build a name --> gender mapping.
+	print STDOUT "DBG: DhG_SetRelativesPrivate($id, $priv) ($DhG_Name[$id])" if ( $DhG_DebugLevel >= $localdbglvl );
+
+	@partners = DhG_GetPartners($id);
+	foreach $partner (@partners)
+	{
+		print STDOUT " p$partner" if ( $DhG_DebugLevel >= $localdbglvl );
+		if ( !defined $DhG_Private_Calc[$partner] )
+		{
+			$DhG_Private_Calc[$partner] = $priv;
+			print STDOUT "\n" if ( $DhG_DebugLevel >= $localdbglvl );
+			DhG_SetRelativesPrivate($partner, $priv);
+			print STDOUT "DBG: DhG_SetRelativesPrivate($id, $priv) ($DhG_Name[$id]) continued"
+					if ( $DhG_DebugLevel >= $localdbglvl );
+		}
+	}
+
+	@sibs = DhG_GetSiblings($id);
+	foreach $sib (@sibs)
+	{
+		print STDOUT " s$sib" if ( $DhG_DebugLevel >= $localdbglvl );
+
+		if ( !defined $DhG_Private_Calc[$sib] )
+		{
+			$DhG_Private_Calc[$sib] = $priv;
+			print STDOUT "\n" if ( $DhG_DebugLevel >= $localdbglvl );
+			DhG_SetRelativesPrivate($sib, $priv);
+			print STDOUT "DBG: DhG_SetRelativesPrivate($id, $priv) ($DhG_Name[$id]) continued"
+					if ( $DhG_DebugLevel >= $localdbglvl );
+		}
+	}
+
+	print STDOUT "\n" if ( $DhG_DebugLevel >= $localdbglvl );
+}
+
+
+# DhG_AnalyseRelations() - calculate privacy flags, build name-->gender mapping.
 sub DhG_AnalyseRelations
 {
 	my ($index, $id, $parent);
@@ -2051,6 +2091,7 @@ sub DhG_AnalyseRelations
 	{
 		if ( defined $DhG_Name[$id] )
 		{
+			# Fill name --> gender mapping based on first name only.
 			if ( defined $DhG_Gender[$id] )
 			{
 				my @person_names = split /\s+/, $DhG_Name[$id];
@@ -2070,6 +2111,16 @@ sub DhG_AnalyseRelations
 						$DhG_NameGenderMap{$person_names[0]} = $DhG_Gender[$id];
 						print STDERR "$person_names[0] is a $DhG_Gender[$id] name\n" if ( $DhG_DebugLevel >= 100 );
 					}
+				}
+			}
+
+			# Calculate privacy
+			if ( DhG_IsAlive($id) || (defined $DhG_Private[$id] && $DhG_Private[$id] == 1) )
+			{
+				if ( !defined $DhG_Private_Calc[$id] )
+				{
+					$DhG_Private_Calc[$id] = 1;
+					DhG_SetRelativesPrivate($id, 1);
 				}
 			}
 		}
