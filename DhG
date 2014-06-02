@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# Invocation script for DhG
+#
+# To use this file, make a copy of it somewhere. It's useful to place it somewhere in your PATH -
+# e.g. $HOME/bin
+#
+# Edit the copy; change the ===WORKING-DIRECTORY=== and ===DATABASE-DIRECTORY=== as desired.
+# I recommend using different directories because the database directory contains permanent storage
+# whereas the working directory is where DhG puts all its generated output. The contents of the
+# working directory can be fairly safely deleted at any time.
+#
+# HINT: if you are familiar with revision control systems such as CVS, Subversion etc.,
+# you might find it useful to manage your database using one of these tools.
+#
+cd ===WORKING-DIRECTORY===
+exec /path/to/Dh_GBrowse.pl ===DATABASE-DIRECTORY===

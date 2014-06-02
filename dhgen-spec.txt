@@ -1,3 +1,26 @@
+|=========================================================================================
+|
+|  dhgen-spec.txt - an outline description of DhG and the file format that it understands.
+| 
+|  This file is part of DhG.
+| 
+|  DhG is free software: you can redistribute it and/or modify
+|  it under the terms of the GNU General Public License as published by
+|  the Free Software Foundation, either version 3 of the License, or
+|  (at your option) any later version.
+|
+|  DhG is distributed in the hope that it will be useful,
+|  but WITHOUT ANY WARRANTY; without even the implied warranty of
+|  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+|  GNU General Public License for more details.
+| 
+|  You should have received a copy of the GNU General Public License
+|  along with DhG.  If not, see <http://www.gnu.org/licenses/>.
+|
+|  $Id$
+|
+|=========================================================================================
+
 Database structure:
 ===================
 
@@ -13,12 +36,15 @@ Examples:
 Haworth/DavidHaworth-42.card
 Edmondson/JamesWilliamEdmondson-123.card
 
-Contents of file:
+DhG doesn't actually care how the files are names or organised, but the "new" command creates
+files according to this scheme, so it's useful to stick with it.
+
+Contents of each file:
 
 Header:
 =======
 Name: Forenames Surname
-Uniq: <positive number that is unique throughaout the database>
+Uniq: <positive number that is unique for this person throughout the database>
 Male|Female
 Private|Public (optional)
 Father: Forenames Surname [Uniq] (optional)
@@ -35,6 +61,8 @@ Timeline
 ========
 YYYY-MM-DD  EventType
 +InfoType   Supplementary information for previous event
+-ExtraInfo  Extra information belonging to the previous +InfoType line
+| continuation line
 
 EventTypes
 ----------
@@ -45,7 +73,6 @@ Census
 Death
 Burial
 Misc
-Other
 
 Supplementary Info
 ------------------
@@ -62,7 +89,6 @@ Supplementary Info
 +Source
 +Theory      = if there's something odd, this is what I think happened
 +Todo
-+What        = exact information for a "Misc" or "Other" event.
 
 +Source  description of source
 -File  FileType   File name (no path)
@@ -88,46 +114,47 @@ YYYY~         Approximate year known
 YYYY-Qq       Quarter known. Q=letter, q=1,2,3,4
 ?             Date not known
 
+The "Quarter" date format is used when the registration of the birth/marriage or death is the only
+information known. The actual date could be much earlier in some cases.
 
-Output
-======
 
-l - list of all people
-r - print parents, siblings and children of specified person
-d - print descendent tree of specified person  (see sample below)
-a - print ancestor tree of specified person (see sample below)
-s - search for matching persons (print all people that contain all the words)
+Commands
+========
 
-Descendent Tree:
+help                     = Print this text
+list                     = List all people
+family <person>          = Print family of a single person
+descendants <person>     = Print all descendants of a single person
+ancestors <person>       = Print all ancestors of a single person
+search <pattern>         = Print name of people that match given terms
+find <pattern>           = Print name of people that match given terms
+quit                     = Close program
+new <name>               = Create a new person in a subdirectory of the CARDBASE directory
+edit <person>            = Edit a person's card
+vi                       = (alias for edit)
+reload                   = Reload the database
+set <variable>=<value>   = Set a variable
+htmlcard <person>        = Output a card file in HTML
+htmlcard all             = Output a card file in HTML for every person in the database
+htmlcard public          = Output a card file in HTML for every "public" person in the database
+hc                       = (alias for htmlcard)
+htmldesc <person>        = Output a public descendant tree in HTML
+htmldesc @<filename>     = Output a public descendant tree in HTML for each person listed in the file
+hd                       = (alias for htmldesc)
+htmlprivdesc <person>    = Output a private descendant tree in HTML
+htmlprivdesc @<filename> = Output a private descendant tree in HTML for each person listed in the file
+hpd                      = (alias for htmlprivdesc)
 
-- Joseph Haworth
-    = Jane Thornton
-      - Mary Ann Haworth
-      - Mary Haworth
-      - Elizabeth Haworth
-      - Thomas Haworth
-      - William Haworth
-      - Catherine Haworth
-    = Elizabeth X
-      - Jane Haworth
-      - Henry Haworth
-      - Joseph Haworth
-      - Edwin Haworth
-            = Nancy Hooson
-              - Mary Elizabeth Haworth
-              - Annie Haworth
-              - Joseph Haworth
-              - John Haworth
-              - Clara Haworth
-              - Herbert Haworth
-            = Mary Jane Gregory
-              - Florrie Haworth
-      - Ann Haworth
+<person> is either a name, a unique id, or a name and id. Parts of names can be given; for example,
+"Fr Bl" matches with Fred Bloggs, but also matches with Freda Blepp. If the selection results
+in more than one match a list is printed instead of performing the command. The command can then be repeated
+using the unique ID of the desired person from the list.
 
-Ancestor Tree:
+<name> (in the 'new' command) is assumed to be of the form Forenames Surname. The unique ID is automatically
+generated. The gender is implied from the gender of other people with the same name. If not defined, it
+is left blank. After the card file is created, an editor is opened to fill in details.
 
-- John Haworth
-  ^ Edwin Haworth
-    ^ Joseph Haworth
-    + Elizabeth X
-  + Nancy Hooson
+A person is "public" if the entire generation connected by sibling and marriage relationships to
+that person is also "public". A single living person in the generation will cause the entire
+generation to be "private". A single individual that is explicitly made "private" will also cause
+the entire generation to be private.
