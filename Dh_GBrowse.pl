@@ -300,6 +300,7 @@ exit 0;
 
 sub DhG_PrintHelp
 {
+	print STDERR "\n";
 	print STDERR "help                     = Print this text\n";
 	print STDERR "list                     = List all people\n";
 	print STDERR "family <person>          = Print family of a single person\n";
@@ -312,20 +313,22 @@ sub DhG_PrintHelp
 	print STDERR "vi                       = (alias for edit)\n";
 	print STDERR "reload                   = Reload the database\n";
 	print STDERR "set <name>=<value>       = Set a variable\n";
-	print STDERR "open <filename>          = Open a file for alternative output\n";
-	print STDERR "close                    = Close the alternative output file\n";
 	print STDERR "htmlcard <person>        = Output a card file in HTML\n";
 	print STDERR "htmlcard all             = Output a card file in HTML for every person in the database\n";
 	print STDERR "htmlcard public          = Output a card file in HTML for every \"public\" person in the database\n";
 	print STDERR "hc                       = (alias for htmlcard)\n";
 	print STDERR "htmldesc <person>        = Output a public descendant tree in HTML\n";
-	print STDERR "htmldesc @<filename>     = Output a public descendant tree in HTML for each person listed in the file\n";
+	print STDERR "htmldesc \@<filename>     = Output a public descendant tree in HTML for each person listed in the file\n";
 	print STDERR "hd                       = (alias for htmldesc)\n";
 	print STDERR "htmlprivdesc <person>    = Output a private descendant tree in HTML\n";
-	print STDERR "htmlprivdesc @<filename> = Output a private descendant tree in HTML for each person listed in the file\n";
+	print STDERR "htmlprivdesc \@<filename> = Output a private descendant tree in HTML for each person listed in the file\n";
 	print STDERR "hpd                      = (alias for htmlprivdesc)\n";
-
-#	print STDERR "D   = Print all descendants of a single person (HTML)\n";
-#	print STDERR "f   = Create .fig file for all partnerships of single person\n";
-#	print STDERR "v   = Create .svg file for all partnerships of single person\n";
+	print STDERR "htmlanc                  = Output an ancestor tree (Ahnentafel) in HTML\n";
+	print STDERR "ha                       = (alias for htmlanc)\n";
+	print STDERR "\n";
+	print STDERR "(c) 2014  David Haworth (dave\@fen-net.de; http://thelancashireman.org)\n";
+	print STDERR "DhG comes with ABSOLUTELY NO WARRANTY. It is free free software, and you are welcome\n";
+	print STDERR "to redistribute it under certain conditions; please read the accompanying file\n";
+    print STDERR "gpl-3.0.txt for details.\n";
+	print STDERR "\n";
 }
