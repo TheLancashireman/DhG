@@ -157,7 +157,7 @@ while ( defined ($line = $term->readline($prompt)) )
 			}
 			elsif ( $cmd eq "new" )
 			{
-				DhG_NewPerson($params);
+				DhG_NewPersonCard($params);
 			}
 			elsif ( $cmd eq "edit" || $cmd eq "vi" )
 			{

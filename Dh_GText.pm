@@ -32,12 +32,14 @@ use Exporter();
 (
 	DhG_TextFamily,
 	DhG_TextCard,
-	DhG_TextDescTree
+	DhG_TextDescTree,
+	DhG_NewPersonCard
 );
 
 sub DhG_TextFamily;
 sub DhG_TextCard;
 sub DhG_TextDescTree;
+sub DhG_NewPersonCard;
 
 my $tt = Template->new({
 	INCLUDE_PATH => "/data/family-history/tools/DhG/templates",
@@ -120,5 +122,27 @@ sub DhG_TextAhnentafel
 	else
 	{
 		print STDERR "Template generation failed: " . $tt->error() . "\n";
+	}
+}
+
+# DhG_NewPersonCard() - create a new person in the database using a template card file
+# Collects all the data then uses Template.
+sub DhG_NewPersonCard
+{
+	my ($person_name, $father, $mother) = @_;
+
+	my ($cardfullpath, $template_vars) = DhG_GetNewPersonTemplateVars($person_name, $father, $mother);
+
+	if ( defined $template_vars )
+	{
+		# Omitted 3rd parameter to tt->process ==> output goes to stdout
+		if ( $tt->process("person-card.tmpl", $template_vars, $cardfullpath) )
+		{
+			DhG_EditFile($cardfullpath);
+		}
+		else
+		{
+			print STDERR "Template generation failed: " . $tt->error() . "\n";
+		}
 	}
 }

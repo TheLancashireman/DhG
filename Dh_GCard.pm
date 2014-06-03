@@ -70,13 +70,14 @@ use Exporter();
 	DhG_GetCardTemplateVars,
 	DhG_GetDescendantTreeTemplateVars,
 	DhG_GetAhnentafelTemplateVars,
+	DhG_GetNewPersonTemplateVars,
 	DhG_GetPersonInfoLine,
 	DhG_Normalise,
 	DhG_Trim,
 	DhG_XMLify,
 	DhG_GetUniq,
-	DhG_NewPerson,
 	DhG_EditCard,
+	DhG_EditFile,
 	DhG_SetVariable,
 	DhG_GetDebugLevel,
 
@@ -86,6 +87,7 @@ use Exporter();
 	DhG_Dump,
 	DhG_PrintAncestorTree,
 	DhG_Search,
+
 
 	DhG_Test
 );
@@ -793,10 +795,12 @@ sub DhG_ClearDatabase
 	%DhG_NameGenderMap = ();
 }
 
-# DhG_NewPerson() - adds a new person to the database
-sub DhG_NewPerson
+# DhG_GetNewPersonTemplateVars() - creates template variables for new person card
+sub DhG_GetNewPersonTemplateVars
 {
 	my ($person_name, $father, $mother) = @_;
+	my $fullpath = undef;
+	my $template_vars = undef;
 
 	my @names = split /\s+/,$person_name;
 
@@ -806,8 +810,9 @@ sub DhG_NewPerson
 		{
 			my $subdirname = $names[$#names];
 			my $filename = join("", @names);
-			my $fullpath = $DhG_CardBase."/".$subdirname;
 			my $gender = $DhG_NameGenderMap{$names[0]};
+
+			$fullpath = $DhG_CardBase."/".$subdirname;
 
 			if ( defined $gender )
 			{
@@ -829,7 +834,7 @@ sub DhG_NewPerson
 			{
 				if ( ! mkdir($fullpath) )
 				{
-					print STDERR "Failed to create new subdirectory $subdirname\n";
+					print STDERR "Failed to create new subdirectory $fullpath\n";
 					return;
 				}
 			}
@@ -843,43 +848,21 @@ sub DhG_NewPerson
 				if ( -e $fullpath )
 				{
 					print STDERR "File $fullpath already exists - will not overwrite\n";
-					return;
-				}
-	
-				if ( open(NEWCARD,">$fullpath") )
-				{
-					print NEWCARD "Name:       $person_name\n";
-					print NEWCARD "Uniq:       $id\n";
-					print NEWCARD "$gender\n";
-					print NEWCARD "Version:    2\n";
-	
-					print NEWCARD "\n";
-					print NEWCARD "?           Birth\n";
-					print NEWCARD "+Source     Not known\n";
-
-					print NEWCARD "\n";
-					print NEWCARD "#1841-06-07  Census\n";
-					print NEWCARD "#1851-03-30  Census\n";
-					print NEWCARD "#1861-04-07  Census\n";
-					print NEWCARD "#1871-04-02  Census\n";
-					print NEWCARD "#1881-04-03  Census\n";
-					print NEWCARD "#1891-04-05  Census\n";
-					print NEWCARD "#1901-03-31  Census\n";
-					print NEWCARD "#1911-04-02  Census\n";
-
-					print NEWCARD "\n";
-					print NEWCARD "?           Death\n";
-					print NEWCARD "+Source     Assumed; date unknown\n";
-					close(NEWCARD);
-
-					$last_id++;
-
-					system("vi $fullpath");
 				}
 				else
 				{
-					print STDERR "Failed to open $fullpath for writing\n";
+					# Now we've got all the stuff, put it in the vars hash for the template.
+					$template_vars =
+					{
+						name			=> $person_name,			# Name of person
+						uniq			=> $id,						# Id of person
+						gender			=> $gender,					# Gender of person
+						father			=> "",						# Name + id of father (temp - not given)
+						mother			=> "",						# Name + id of mother
+					};
 				}
+	
+				$last_id++;
 			}
 			else
 			{
@@ -895,6 +878,8 @@ sub DhG_NewPerson
 	{
 		print STDERR "Person's name must be at least Forename Surname\n";
 	}
+
+	return ( $fullpath, $template_vars);
 }
 
 # DhG_ParseName() splits the [unique identification] from a name and returns both.
@@ -2325,104 +2310,6 @@ sub DhG_PrintPersonList
 	}
 }
 
-# DhG_GetSpousesAndChildren() - return an array containing spouses and children of the specified person
-sub DhG_GetSpousesAndChildren
-{
-	my ($id) = @_;
-
-	my ($i, $c_id, $p_name, $p_id);
-	my @sp_name = ();
-	my @sp_date = ();
-	my @sp_id = ();
-	my @sp_used = ();
-	my @result_list = ();
-	my $result_index = 0;
-
-	# Get a list of all the marriages. We'll cross them out if we find children.
-	if ( defined $DhG_Marriage_Names[$id] )
-	{
-		# Convert names, dates and ids into arrays. Remember: the id might be "-"!
-		@sp_name = split /\|/,$DhG_Marriage_Names[$id];
-		@sp_date = split /\|/,$DhG_Marriage_Dates[$id];
-		@sp_id = split /\|/,$DhG_Marriage_Ids[$id];
-
-		for ( $j = 0; defined $sp_name[$j]; $j++ )
-		{
-			$sp_used[$j] = 0;
-		}
-	}
-
-	# Now see if there are any children
-	foreach $c_id ( 1 .. $#DhG_Name )
-	{
-		if ( defined $DhG_Name[$c_id] )
-		{
-			my ($p_name, $p_id);
-			my $is_child;
-
-			if ( defined $DhG_Father_Id[$c_id] && $DhG_Father_Id[$c_id] == $id )
-			{
-				# Our person is father of this child.
-				$p_name = $DhG_Mother_Name[$c_id];
-				$p_id = $DhG_Mother_Id[$c_id];
-				$is_child = 1;
-			}
-			elsif ( defined $DhG_Mother_Id[$c_id] && $DhG_Mother_Id[$c_id] == $id )
-			{
-				# Our person is mother of this child.
-				$p_name = $DhG_Father_Name[$c_id];
-				$p_id = $DhG_Father_Id[$c_id];
-				$is_child = 1;
-			}
-			else
-			{
-				# Not interested in this child
-				$is_child = 0;
-			}
-
-			if ( $is_child )
-			{
-				my $c_dob = $DhG_Birth_Date[$c_id];
-
-				if ( defined $p_id )
-				{
-					$result_list[$result_index] = "$c_dob |$c_id|$p_id|$p_name";
-				}
-				else
-				{
-					$result_list[$result_index] = "$c_dob |$c_id|-|$p_name";
-				}
-				$result_index++;
-
-				# Cross out all the spouses that match this child's other parent.
-				for ( $j = 0; defined $sp_name[$j]; $j++ )
-				{
-					if ( defined $p_id && ($sp_id[$j] eq $p_id) )
-					{
-						$sp_used[$j] = 1;
-					}
-					elsif ( $p_name eq $sp_name[$j] )
-					{
-						$sp_used[$j] = 1;
-					}
-				}
-			}
-		}
-	}
-
-	# Now we have a list of all the children, along with the DoB and the other parent (name/id)
-	# For a complete list we need to add dummy children for all the childless marriages.
-	for ( $j = 0; defined $sp_name[$j]; $j++ )
-	{
-		if ( !$sp_used[$j] )
-		{
-			$result_list[$result_index] = "$sp_date[$j] |-|$sp_id[$j]|$sp_name[$j]";
-		}
-	}
-
-	return sort @result_list;
-}
-
 # DhG_Search() prints all the people whose names match the search string
 sub DhG_Search
 {
@@ -2543,21 +2430,7 @@ sub DhG_EditCard
 		{
 			if ( -r $filename && -w $filename )
 			{
-				print STDERR "Editing $filename...\n";
-				if ( defined $ENV{"VISUAL"} )
-				{
-					$cmd = $ENV{"VISUAL"};
-				}
-				elsif ( defined $ENV{"EDITOR"} )
-				{
-					$cmd = $ENV{"EDITOR"};
-				}
-				else
-				{
-					$cmd = "vi";
-				}
-				$cmd = $cmd." ".$filename;
-				system $cmd;
+				DhG_EditFile($filename);
 			}
 			else
 			{
@@ -2566,11 +2439,33 @@ sub DhG_EditCard
 		}
 		else
 		{
-			print STDERR "File number for give person is not defined.\n";
+			print STDERR "File name for give person is not defined.\n";
 		}
 	}
 	else
 	{
 		print STDERR "File number for give person is not defined.\n";
 	}
+}
+
+# DhG_EditFile() - edits an arbitrary file
+sub DhG_EditFile
+{
+	my ($filename) = @_;
+
+	print STDERR "Editing $filename...\n";
+	if ( defined $ENV{"VISUAL"} )
+	{
+		$cmd = $ENV{"VISUAL"};
+	}
+	elsif ( defined $ENV{"EDITOR"} )
+	{
+		$cmd = $ENV{"EDITOR"};
+	}
+	else
+	{
+		$cmd = "vi";
+	}
+	$cmd = $cmd." ".$filename;
+	system $cmd;
 }

@@ -1,0 +1,79 @@
+[%# person-card.tmpl - a template for a new person card
+
+    (c) 2014 David Haworth
+   
+    This file is part of DhG.
+   
+    DhG is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+   
+    DhG is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+   
+    You should have received a copy of the GNU General Public License
+    along with DhG.  If not, see <http://www.gnu.org/licenses/>.
+
+    $Id$
+-%]
+Name:       [% name %]
+Uniq:       [% uniq %]
+[% IF gender == "" -%]
+gender
+[% ELSE -%]
+[% gender %]
+[% END -%]
+Version:    2
+[% IF father != "" -%]
+Father:     [% father %]
+[% END -%]
+[% IF mother != "" -%]
+Mother:     [% mother %]
+[% END -%]
+
+?           Birth
++Source     Not known
+
+?           Death
++Source     Assumed; date not known
+
+EOF
+
+Copy the following lines to the right places as necessary and complete the information.
+
+[% IF father == "" -%]
+Father:     - - [nnn]
+[% END -%]
+[% IF mother == "" -%]
+Mother:     - - [nnn]
+[% END -%]
+
+?           Baptism
+?           Marriage    - - [nnn]
+?           Burial
+
++Place      -
++Source     -
+-URL        -
+-File       Image       -
+-File       Transcript  -
+-File       Photo       -
+
+1841-06-07  Census
+1851-03-30  Census
+1861-04-07  Census
+1871-04-02  Census
+1881-04-03  Census
+1891-04-05  Census
+1901-03-31  Census
+1911-04-02  Census
++Abode      -
++Age        -
++Occupation -
++Birthplace -
++Family     1911 only
++Source     Census record HO107- RGxx-
+-File       Image       -
