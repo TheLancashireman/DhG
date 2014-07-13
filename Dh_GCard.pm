@@ -1640,6 +1640,8 @@ sub DhG_AppendDescendantTree
 	$name = DhG_GetName($id);
 	$years = DhG_GetYearRange($id);
 
+	print STDOUT "DBG: AppendDescendantTree $name $id\n" if ( $DhG_DebugLevel >= 30 );
+
 	# Construct name for output.
 	$printname = $name;
 	$printname .= " ($years)" if ( defined $years && $years ne "" );
