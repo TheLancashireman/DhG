@@ -604,7 +604,8 @@ sub DhG_LoadCard_GetNextEvent
 	my ($e_d, $e_t, $e_r);
 	my $in_source = 0;
 	my $newline = "\n";
-	my ($source_name,$source_url) = ("", "");
+	my ($source_name, $source_nLinks) = ("", 0);
+	my @source_link = ();
 
 	print STDOUT "DBG: DhG_LoadCard_GetNextEvent: mode = \"$mode\"\n" if ( $DhG_DebugLevel >= 100 );
 	if ( $mode eq 'html' )
@@ -666,23 +667,107 @@ sub DhG_LoadCard_GetNextEvent
 			if ( $source_name ne "" )
 			{
 				$source .= $newline if ( $source ne "" );
-				$source .= "Source: ";
+				$source .= "Source: ".$source_name;
 				if ( $mode eq 'html' )
 				{
-					$source .= "<a href=\"$source_url\">" if ( $source_url ne "" );
-					$source .= $source_name;
-					$source .= "</a>" if ( $source_url ne "" );
-				}
-				else
-				{
-					$source .= $source_name;
+					my $i;
+					for ( $i = 0; $i < $source_nLinks; $i++ )
+					{
+						my $tag = "[".($i+1)."]";
+						$source .= " <a href=\"$source_link[$i]\">$tag</a>"
+					}
 				}
 			}
 
 			# Return the line number of the next event and the data for this event.
 			return ($mark, $date, $event, $spouse, $spouse_file, $info, $source);
 		}
+		elsif ( $line =~ m{^\+} )
+		{
+			# New primary info line
+			# Output the current source if there is one
+			if ( $in_source )
+			{
+				$source .= $newline if ( $source ne "" );
+				$source .= "Source: ".$source_name;
+				if ( $mode eq 'html' )
+				{
+					my $i;
+					for ( $i = 0; $i < $source_nLinks; $i++ )
+					{
+						my $tag = "[".($i+1)."]";
+						$source .= " <a href=\"$source_link[$i]\">$tag</a>"
+					}
+				}
+
+				# Clear out the previous source.
+				$source_link = ();
+				$source_nLinks = 0;
+				$in_source = 0;
+			}
+
+			if ( $line =~ m{^\+Source} )
+			{
+				# Switch to SOURCE mode
+				($source_name) = $line =~ m{^\+Source (.*)$};
+				$source_name = DhG_Trim($source_name);
+				if ( $source_name eq "" )
+				{
+					print STDERR "Event source line $line hase no source name - ignoring.\n";
+				}
+				else
+				{
+					($source_name) = DhG_XMLify($source_name);
+					$in_source = 1;
+				}
+			}
+			else
+			{
+				my ($info_type, $info_val) = $line =~ m{^\+(\S*)\s(.*)$};
+				if ( defined $info_type && defined $info_val )
+				{
+					$info_type = ucfirst(lc(DhG_Trim($info_type)));
+					$info_val = ucfirst(DhG_Trim($info_val));
+					print STDOUT "DBG: Event info line \"$info_type - $info_val\" at $mark.\n"
+																					if ( $DhG_DebugLevel >= 100 );
+					($info_type, $info_val) = DhG_XMLify($info_type, $info_val);
+
+					$info .= $newline if ( $info ne "" );
+					$info .= $info_type . ": " . $info_val;
+				}
+				else
+				{
+					print STDOUT "DBG: Ignoring event info line \"$line\" at $mark.\n"
+																					if ( $DhG_DebugLevel >= 100 );
+				}
+			}
+		}
+		elsif ( $line =~ m{^\-} )
+		{
+			# New secondary info line - only process those that are part of source records
+			if ( $in_source )
+			{
+				if ( $line =~ m{^-URL} )
+				{
+					# A link to an arbitrary web site
+					my $source_url;
+					($source_url) = $line =~ m{^\-URL (.*)$};
+					$source_url = DhG_Trim($source_url);
+					($source_url) = DhG_XMLify($source_url);
+					$source_link[$source_nLinks++] = $source_url;
+				}
+			}
+		}
+		elsif ( $line =~ m{^\|} )
+		{
+			# Continuation line
+		}
 		else
+		{
+			# Ignore anything else
+		}
+
+		if ( 1 == 0 )
 		{
 			# INFO lines precede SOURCE lines
 			if ( !$in_source )
@@ -691,6 +776,8 @@ sub DhG_LoadCard_GetNextEvent
 				{
 					# Switch to SOURCE mode
 					$in_source = 1;
+					@source_link = ();
+					$source_nLinks = 0;
 				}
 				else
 				{
@@ -722,30 +809,32 @@ sub DhG_LoadCard_GetNextEvent
 					if ( $source_name ne "" )
 					{
 						$source .= $newline if ( $source ne "" );
-						$source .= "Source: ";
+						$source .= "Source: ".$source_name;
 						if ( $mode eq 'html' )
 						{
-							$source .= "<a href=\"$source_url\">" if ( $source_url ne "" );
-							$source .= $source_name;
-							$source .= "</a>" if ( $source_url ne "" );
-						}
-						else
-						{
-							$source .= $source_name;
+							my $i;
+							for ( $i = 0; $i < $source_nLinks; $i++ )
+							{
+								my $tag = "[".($i+1)."]";
+								$source .= " <a href=\"$source_link[$i]\">$tag</a>"
+							}
 						}
 					}
 
 					# Clear out the previous source.
-					$source_url = "";
+					$source_link = ();
+					$source_nLinks = 0;
 					($source_name) = $line =~ m{^\+Source (.*)$};
 					$source_name = DhG_Trim($source_name);
 					($source_name) = DhG_XMLify($source_name);
 				}
 				elsif ( $line =~ m{^-URL} )
 				{
+					my $source_url;
 					($source_url) = $line =~ m{^\-URL (.*)$};
 					$source_url = DhG_Trim($source_url);
 					($source_url) = DhG_XMLify($source_url);
+					$source_link[$source_nLinks++] = $source_url;
 				}
 			}
 		}
@@ -757,16 +846,15 @@ sub DhG_LoadCard_GetNextEvent
 	if ( $source_name ne "" )
 	{
 		$source .= $newline if ( $source ne "" );
-		$source .= "Source: ";
-		if ( $mode eq "html" )
+		$source .= "Source: ".$source_name;
+		if ( $mode eq 'html' )
 		{
-			$source .= "<a href=\"$source_url\">" if ( $source_url ne "" );
-			$source .= $source_name;
-			$source .= "</a>" if ( $source_url ne "" );
-		}
-		else
-		{
-			$source .= $source_name;
+			my $i;
+			for ( $i = 0; $i < $source_nLinks; $i++ )
+			{
+				my $tag = "[".($i+1)."]";
+				$source .= " <a href=\"$source_link[$i]\">$tag</a>"
+			}
 		}
 	}
 
