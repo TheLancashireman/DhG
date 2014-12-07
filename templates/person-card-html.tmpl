@@ -211,6 +211,28 @@
 [% IF ( os == "even" ); os = "odd"; ELSE; os = "even"; END -%]
 [% END -%]
   </table>
+[% IF n_transcripts > 0 -%]
+  <p>
+  </p>
+  <hr/>
+  <h3>Transcripts of sources</h3>      
+  <table class="transcripts">
+[% t = 0 -%]
+[% os = "even" -%]
+[% WHILE t < n_transcripts -%]
+    <tr class="transcripts" id="transcript_[% t + 1 %]">
+      <td class="transcript-index-[% os %]">
+        [% t + 1 %]
+      </td>
+      <td class="transcript-text-[% os %]">
+        [% transcript.$t -%]
+      </td>
+    </tr>
+[% t = t + 1 -%]
+[% IF ( os == "even" ); os = "odd"; ELSE; os = "even"; END -%]
+[% END -%]
+  </table>
+[% END -%]
   <p>
   </p>
   <hr/>
