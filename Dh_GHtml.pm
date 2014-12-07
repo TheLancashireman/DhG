@@ -41,18 +41,39 @@ sub DhG_MultiHtmlCard;
 sub DhG_HtmlDescTree;
 sub DhG_HtmlAhnentafel;
 
-my $tt = Template->new({
-	INCLUDE_PATH => "/data/family-history/tools/DhG/templates",
-	INTERPOLATE => 0,
-}) || die "$Template::ERROR\n";
+my $tt = undef;
 
 return 1;
+
+sub DhG_HtmlInit
+{
+	if ( !defined $tt )
+	{
+		my $td = DhG_GetTemplateDir();
+
+		if ( -d $td )
+		{
+			$tt = Template->new({
+				INCLUDE_PATH => $td,
+				INTERPOLATE => 0,
+			}) || die "$Template::ERROR\n";
+		}
+		else
+		{
+			print STDERR "Template directory $td not found.\n";
+		}
+	}
+}
+
 
 # DhG_HtmlCard() - output an HTML "card file" for a given person.
 # Collects all the data then uses Template.
 sub DhG_HtmlCard
 {
 	my ($id, $privacy) = @_;
+
+	DhG_HtmlInit();
+	return if ( !defined $tt );
 
 	my $template_vars = DhG_GetCardTemplateVars($id, $privacy, 'html');
 	my $filebase = DhG_GetFilebase($id);
@@ -76,6 +97,9 @@ sub DhG_MultiHtmlCard
 {
 	my ($select) = @_;
 	my ($last, $id, $name, $fn);
+
+	DhG_HtmlInit();
+	return if ( !defined $tt );
 
 	$last = DhG_GetNoOfNames();
 
@@ -111,6 +135,9 @@ sub DhG_HtmlDescTree
 {
 	my ($id, $privacy) = @_;
 
+	DhG_HtmlInit();
+	return if ( !defined $tt );
+
 	my $template_vars = DhG_GetDescendantTreeTemplateVars($id, $privacy);
 	my $filebase = DhG_GetFilebase($id);
 
@@ -133,6 +160,9 @@ sub DhG_HtmlDescTree
 sub DhG_HtmlAhnentafel
 {
 	my ($id) = @_;
+
+	DhG_HtmlInit();
+	return if ( !defined $tt );
 
 	my $template_vars = DhG_GetAhnentafelTemplateVars($id);
 	my $filebase = DhG_GetFilebase($id);
