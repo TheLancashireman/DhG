@@ -80,6 +80,7 @@ use Exporter();
 	DhG_EditFile,
 	DhG_SetVariable,
 	DhG_GetDebugLevel,
+	DhG_GetTemplateDir,
 
 	DhG_GetYearRange,
 
@@ -99,6 +100,7 @@ sub DhG_LoadCard_Event;
 sub DhG_NameToFilename;
 sub DhG_Trim;
 sub DhG_FormatDate;
+sub DhG_GetTemplateDir;
 
 # Initialisation, "global-my" variables go here.
 
@@ -107,6 +109,7 @@ my $DhG_DebugLevel = 0;
 my $DhG_OutputFormat = "none";
 my $DhG_DateFormat = "raw";
 my $DhG_CardBase = undef;
+my $DhG_TemplateDir = "/data/family-history/tools/DhG/templates";
 
 # Internal variables
 my $outputfile_name = undef;
@@ -181,6 +184,11 @@ sub DhG_SetVariable
 		{
 			# Base directory for new card files
 			$DhG_CardBase = $varvalue;
+		}
+		elsif ( $varname eq "TEMPLATEDIR" )
+		{
+			# Directory containing templates
+			$DhG_TemplateDir = $varvalue;
 		}
 		else
 		{
@@ -401,7 +409,8 @@ sub DhG_LoadCard
 							}
 							if ( !defined $father_uniq )
 							{
-								printf STDERR "$filename: WARNING: Father has no unique ID\n";
+								printf STDERR "$filename: WARNING: Father has no unique ID\n"
+									if ( $DhG_DebugLevel > 9 );
 							}
 						}
 					}
@@ -421,7 +430,8 @@ sub DhG_LoadCard
 							}
 							if ( !defined $mother_uniq )
 							{
-								printf STDERR "$filename: WARNING: Mother has no unique ID\n";
+								printf STDERR "$filename: WARNING: Mother has no unique ID\n"
+									if ( $DhG_DebugLevel > 9 );
 							}
 						}
 					}
@@ -597,12 +607,15 @@ sub DhG_LoadCard_FindFirstEvent
 # DhG_LoadCard_GetNextEvent() - extract the next event
 sub DhG_LoadCard_GetNextEvent
 {
-	my ($mark, $lref, $mode) = @_;
+	my ($mark, $lref, $mode, $t_index, $tref) = @_;
 	my ($date, $event, $info, $source) = ("", "", "", "");
     my ($spouse, $spouse_file) = ("", "");
 	my ($line);
 	my ($e_d, $e_t, $e_r);
 	my $in_source = 0;
+	my $in_transcript = 0;
+	my $transcript_text = undef;
+	my $transcript_type = undef;
 	my $newline = "\n";
 	my ($source_name, $source_nLinks) = ("", 0);
 	my @source_link = ();
@@ -663,8 +676,25 @@ sub DhG_LoadCard_GetNextEvent
 		$line = ${$lref}[$mark];
 		if ( $line =~ m{^[1-9?]} )
 		{
-			# Found next event. Output the remaining source if there is one.
-			if ( $source_name ne "" )
+			# Found next event. Output the remaining transcript if there is one.
+			if ( $in_transcript )
+			{
+				if ( defined $transcript_text )
+				{
+					my $tline = "";
+					$tline .= "<$transcript_type>" if ( $mode eq 'html' );
+					$tline .= $transcript_text;
+					$tline .= "</$transcript_type>" if ( $mode eq 'html' );
+					$tline .= "\n";
+					${$tref}[$t_index] = $tline;
+					$t_index++;
+					$source_link[$source_nLinks++] = "<a href=\"#transcript_$t_index\">[transcript $t_index]</a>";
+				}
+				$in_transcript = 0;
+			}
+
+			# Output the remaining source if there is one.
+			if ( $in_source )
 			{
 				$source .= $newline if ( $source ne "" );
 				$source .= "Source: ".$source_name;
@@ -674,16 +704,32 @@ sub DhG_LoadCard_GetNextEvent
 					for ( $i = 0; $i < $source_nLinks; $i++ )
 					{
 						my $tag = "[".($i+1)."]";
-						$source .= " <a href=\"$source_link[$i]\">$tag</a>"
+						$source .= "&nbsp;&nbsp;$source_link[$i]"
 					}
 				}
 			}
 
 			# Return the line number of the next event and the data for this event.
-			return ($mark, $date, $event, $spouse, $spouse_file, $info, $source);
+			return ($mark, $date, $event, $spouse, $spouse_file, $info, $source, $t_index);
 		}
 		elsif ( $line =~ m{^\+} )
 		{
+			if ( $in_transcript )
+			{
+				if ( defined $transcript_text )
+				{
+					my $tline = "";
+					$tline .= "<$transcript_type>" if ( $mode eq "html" );
+					$tline .= $transcript_text;
+					$tline .= "</$transcript_type>" if ( $mode eq "html" );
+					$tline .= "\n";
+					${$tref}[$t_index] = $tline;
+					$t_index++;
+					$source_link[$source_nLinks++] = "<a href=\"#transcript_$t_index\">[transcript $t_index]</a>";
+				}
+				$in_transcript = 0;
+			}
+
 			# New primary info line
 			# Output the current source if there is one
 			if ( $in_source )
@@ -695,8 +741,7 @@ sub DhG_LoadCard_GetNextEvent
 					my $i;
 					for ( $i = 0; $i < $source_nLinks; $i++ )
 					{
-						my $tag = "[".($i+1)."]";
-						$source .= " <a href=\"$source_link[$i]\">$tag</a>"
+						$source .= "&nbsp;&nbsp;$source_link[$i]";
 					}
 				}
 
@@ -744,105 +789,88 @@ sub DhG_LoadCard_GetNextEvent
 		}
 		elsif ( $line =~ m{^\-} )
 		{
+			if ( $in_transcript )
+			{
+				if ( defined $transcript_text )
+				{
+					my $tline = "";
+					$tline .= "<$transcript_type>" if ( $mode eq "html" );
+					$tline .= $transcript_text;
+					$tline .= "</$transcript_type>" if ( $mode eq "html" );
+					$tline .= "\n";
+					${$tref}[$t_index] = $tline;
+					$t_index++;
+					$source_link[$source_nLinks++] = "<a href=\"#transcript_$t_index\">[transcript $t_index]</a>";
+				}
+				$in_transcript = 0;
+			}
+
 			# New secondary info line - only process those that are part of source records
 			if ( $in_source )
 			{
 				if ( $line =~ m{^-URL} )
 				{
 					# A link to an arbitrary web site
-					my $source_url;
-					($source_url) = $line =~ m{^\-URL (.*)$};
+					my ($source_url) = $line =~ m{^\-URL (.*)$};
 					$source_url = DhG_Trim($source_url);
-					($source_url) = DhG_XMLify($source_url);
-					$source_link[$source_nLinks++] = $source_url;
+					$source_link[$source_nLinks++] = "<a href=\"$source_url\">[link]</a>";
+				}
+				elsif ( $line =~ m{^-Transcript} )
+				{
+					($transcript_type) = $line =~ m{^-Transcript (.*)$};
+					$transcript_type = DhG_Trim($transcript_type) if ( defined $transcript_type );
+					$transcript_type = "pre" if ( !defined $transcript_type || $transcript_type eq "" );
+					$in_transcript = 1;
+					$transcript_text = undef
 				}
 			}
 		}
 		elsif ( $line =~ m{^\|} )
 		{
 			# Continuation line
+			if ( $in_transcript )
+			{
+				my ($transcript_line) = $line =~ m{^\|(.*)$};
+				if ( defined $transcript_line )
+				{
+					($transcript_line) = DhG_XMLify($transcript_line);
+					if ( defined $transcript_text )
+					{
+						$transcript_text .= "\n".$transcript_line;
+					}
+					else
+					{
+						$transcript_text = $transcript_line;
+					}
+				}
+			}
 		}
 		else
 		{
 			# Ignore anything else
 		}
 
-		if ( 1 == 0 )
-		{
-			# INFO lines precede SOURCE lines
-			if ( !$in_source )
-			{
-				if ( $line =~ m{^\+Source} )
-				{
-					# Switch to SOURCE mode
-					$in_source = 1;
-					@source_link = ();
-					$source_nLinks = 0;
-				}
-				else
-				{
-					my ($info_type, $info_val) = $line =~ m{^\+(\S*)\s(.*)$};
-					if ( defined $info_type && defined $info_val )
-					{
-						$info_type = ucfirst(lc(DhG_Trim($info_type)));
-						$info_val = ucfirst(DhG_Trim($info_val));
-						print STDOUT "DBG: Event info line \"$info_type - $info_val\" at $mark.\n"
-																						if ( $DhG_DebugLevel >= 100 );
-						($info_type, $info_val) = DhG_XMLify($info_type, $info_val);
-
-						$info .= $newline if ( $info ne "" );
-						$info .= $info_type . ": " . $info_val;
-					}
-					else
-					{
-						print STDOUT "DBG: Ignoring event info line \"$line\" at $mark.\n"
-																						if ( $DhG_DebugLevel >= 100 );
-					}
-				}
-			}
-
-			if ( $in_source )
-			{
-				if ( $line =~ m{^\+Source} )
-				{
-					# New source line. Output the previous source if there is one.
-					if ( $source_name ne "" )
-					{
-						$source .= $newline if ( $source ne "" );
-						$source .= "Source: ".$source_name;
-						if ( $mode eq 'html' )
-						{
-							my $i;
-							for ( $i = 0; $i < $source_nLinks; $i++ )
-							{
-								my $tag = "[".($i+1)."]";
-								$source .= " <a href=\"$source_link[$i]\">$tag</a>"
-							}
-						}
-					}
-
-					# Clear out the previous source.
-					$source_link = ();
-					$source_nLinks = 0;
-					($source_name) = $line =~ m{^\+Source (.*)$};
-					$source_name = DhG_Trim($source_name);
-					($source_name) = DhG_XMLify($source_name);
-				}
-				elsif ( $line =~ m{^-URL} )
-				{
-					my $source_url;
-					($source_url) = $line =~ m{^\-URL (.*)$};
-					$source_url = DhG_Trim($source_url);
-					($source_url) = DhG_XMLify($source_url);
-					$source_link[$source_nLinks++] = $source_url;
-				}
-			}
-		}
-
 		$mark++;
 	}
 
-	# No further event found. Output the remaining source if there is one.
+	# No further event found. Output the remaining transcript and source if there is one.
+
+	if ( $in_transcript )
+	{
+		if ( defined $transcript_text )
+		{
+			my $tline = "";
+			$tline .= "<$transcript_type>" if ( $mode eq "html" );
+			$tline .= $transcript_text;
+			$tline .= "</$transcript_type>" if ( $mode eq "html" );
+			$tline .= "\n";
+			${$tref}[$t_index] = $tline;
+			$t_index++;
+			$source_link[$source_nLinks++] = "<a href=\"#transcript_$t_index\">[transcript $t_index]</a>";
+		}
+		$in_transcript = 0;
+	}
+
 	if ( $source_name ne "" )
 	{
 		$source .= $newline if ( $source ne "" );
@@ -853,13 +881,13 @@ sub DhG_LoadCard_GetNextEvent
 			for ( $i = 0; $i < $source_nLinks; $i++ )
 			{
 				my $tag = "[".($i+1)."]";
-				$source .= " <a href=\"$source_link[$i]\">$tag</a>"
+				$source .= "&nbsp;&nbsp;$source_link[$i]"
 			}
 		}
 	}
 
 	# Return (-1) to indicate end, and the data for this event.
-	return ((-1), $date, $event, $spouse, $spouse_file, $info, $source);
+	return ((-1), $date, $event, $spouse, $spouse_file, $info, $source, $t_index);
 }
 
 # DhG_ClearDatabase() - removes all records from database
@@ -1436,6 +1464,7 @@ sub DhG_GetCardTemplateVars
 	my (@child_id, @children, @child_files, $n_children, $children_priv);
 	my (@child_parent, @child_parent_id, @child_parent_rel, @child_parent_file);
 	my ($n_events, @e_date, @e_type, @e_spouse, @e_spousefile, @e_info, @e_source);
+	my ($n_transcripts, @transcripts);
 	my ($xxid, $xxname, $xxyears);
 	my (@filelines);
 	my ($mark, $date, $event, $spouse, $spouse_file, $info, $source);
@@ -1591,18 +1620,20 @@ sub DhG_GetCardTemplateVars
 	$mark = DhG_LoadCard_FindFirstEvent(\@filelines);
 
 	$n_events = 0;
+	$n_transcripts = 0;
 	@e_date = ();
 	@e_type = ();
 	@e_spouse = ();
 	@e_spousefile = ();
 	@e_info = ();
 	@e_source = ();
+	@transcripts = ();
 
 	while ( $mark > 0 )
 	{
 		# Get 4 parts of event and marker for next (-1 ==> end).
-		($mark, $date, $event, $spouse, $spouse_file, $info, $source)
-				= DhG_LoadCard_GetNextEvent($mark, \@filelines, $mode);
+		($mark, $date, $event, $spouse, $spouse_file, $info, $source, $n_transcripts)
+				= DhG_LoadCard_GetNextEvent($mark, \@filelines, $mode, $n_transcripts, \@transcripts);
 
 		# Append each of the 4 parts of the event to the its respective array.
 		push(@e_date, $date);
@@ -1631,6 +1662,7 @@ sub DhG_GetCardTemplateVars
 		@child_parent_rel = DhG_XMLify(@child_parent_rel);
 		@child_parent_file = DhG_XMLify(@child_parent_file);
 		# Event data is not converted here because it may contain XML/HTML
+		# Transcript data is not converted here because it may be literal
 	}
 
 	# Now we've got all the stuff, put it in the vars hash for the template.
@@ -1668,7 +1700,9 @@ sub DhG_GetCardTemplateVars
 		e_spouse		=> \@e_spouse,				# Names of spouses for "Marriage" events
 		e_spousefile	=> \@e_spousefile,			# Filenames of spouses
 		e_info			=> \@e_info,				# More info from event
-		e_source		=> \@e_source				# Sources for event
+		e_source		=> \@e_source,				# Sources for event
+		n_transcripts	=> $n_transcripts,			# No of transcripts
+		transcript		=> \@transcripts			# Array of transcripts
 	};
 
 	return $template_vars;
@@ -2488,7 +2522,13 @@ sub DhG_SplitName
 # DhG_GetDebugLevel() returns the debug level
 sub DhG_GetDebugLevel
 {
-	return $DhG_DebugLevel
+	return $DhG_DebugLevel;
+}
+
+# DhG_GetTemplateDir() returns the template directory 
+sub DhG_GetTemplateDir
+{
+	return $DhG_TemplateDir;
 }
 
 # Function for testing stuff

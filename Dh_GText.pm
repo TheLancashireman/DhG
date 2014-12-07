@@ -41,12 +41,29 @@ sub DhG_TextCard;
 sub DhG_TextDescTree;
 sub DhG_NewPersonCard;
 
-my $tt = Template->new({
-	INCLUDE_PATH => "/data/family-history/tools/DhG/templates",
-	INTERPOLATE => 0,
-}) || die "$Template::ERROR\n";
+my $tt = undef;
 
 return 1;
+
+sub DhG_TextInit
+{
+	if ( !defined $tt )
+	{
+		my $td = DhG_GetTemplateDir();
+
+		if ( -d $td )
+		{
+			$tt = Template->new({
+				INCLUDE_PATH => $td,
+				INTERPOLATE => 0,
+			}) || die "$Template::ERROR\n";
+		}
+		else
+		{
+			print STDERR "Template directory $td not found.\n";
+		}
+	}
+}
 
 # DhG_TextFamily() - output a text family report for a given person.
 # A family report is a subset of the card report -- no timeline.
@@ -54,6 +71,9 @@ return 1;
 sub DhG_TextFamily
 {
 	my ($id, $privacy) = @_;
+
+	DhG_TextInit();
+	return if ( !defined $tt );
 
 	my $template_vars = DhG_GetCardTemplateVars($id, $privacy, 'text');
 	my $filebase = DhG_GetFilebase($id);
@@ -74,6 +94,9 @@ sub DhG_TextCard
 {
 	my ($id, $privacy) = @_;
 
+	DhG_TextInit();
+	return if ( !defined $tt );
+
 	my $template_vars = DhG_GetCardTemplateVars($id, $privacy, 'text');
 	my $filebase = DhG_GetFilebase($id);
 
@@ -92,6 +115,9 @@ sub DhG_TextCard
 sub DhG_TextDescTree
 {
 	my ($id, $privacy) = @_;
+
+	DhG_TextInit();
+	return if ( !defined $tt );
 
 	my $template_vars = DhG_GetDescendantTreeTemplateVars($id, $privacy);
 	my $filebase = DhG_GetFilebase($id);
@@ -112,6 +138,9 @@ sub DhG_TextAhnentafel
 {
 	my ($id) = @_;
 
+	DhG_TextInit();
+	return if ( !defined $tt );
+
 	my $template_vars = DhG_GetAhnentafelTemplateVars($id);
 	my $filebase = DhG_GetFilebase($id);
 
@@ -130,6 +159,9 @@ sub DhG_TextAhnentafel
 sub DhG_NewPersonCard
 {
 	my ($person_name, $father, $mother) = @_;
+
+	DhG_TextInit();
+	return if ( !defined $tt );
 
 	my ($cardfullpath, $template_vars) = DhG_GetNewPersonTemplateVars($person_name, $father, $mother);
 
