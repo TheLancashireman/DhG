@@ -23,6 +23,7 @@
 
 package Dh_GCard;
 
+use POSIX;
 use Exporter();
 @ISA = qw(Exporter);
 @EXPORT  =
@@ -1704,6 +1705,8 @@ sub DhG_GetCardTemplateVars
 		# Transcript data is not converted here because it may be literal
 	}
 
+	my $last_update = strftime("%Y-%m-%d %H:%M GMT", gmtime());
+
 	# Now we've got all the stuff, put it in the vars hash for the template.
 	my $template_vars =
 	{
@@ -1741,7 +1744,8 @@ sub DhG_GetCardTemplateVars
 		e_info			=> \@e_info,				# More info from event
 		e_source		=> \@e_source,				# Sources for event
 		n_transcripts	=> $n_transcripts,			# No of transcripts
-		transcript		=> \@transcripts			# Array of transcripts
+		transcript		=> \@transcripts,			# Array of transcripts
+		last_update		=> $last_update				# Date/time of last update
 	};
 
 	return $template_vars;
