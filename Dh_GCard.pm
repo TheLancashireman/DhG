@@ -74,6 +74,7 @@ use Exporter();
 	DhG_GetPersonInfoLine,
 	DhG_Normalise,
 	DhG_Trim,
+	DhG_MungeUrl,
 	DhG_XMLify,
 	DhG_GetUniq,
 	DhG_EditCard,
@@ -99,6 +100,7 @@ sub DhG_LoadCard;
 sub DhG_LoadCard_Event;
 sub DhG_NameToFilename;
 sub DhG_Trim;
+sub DhG_MungeUrl;
 sub DhG_FormatDate;
 sub DhG_GetTemplateDir;
 
@@ -152,6 +154,22 @@ sub DhG_Trim
 	$txt =~ s/^\s*(\S.*)$/$1/;
 	$txt =~ s/^(.*\S)\s*$/$1/;
 	return $txt;
+}
+
+# DhG_MungeUrl() - trims leading and trailing spaces from URL, translate, ..., returns result.
+sub DhG_MungeUrl
+{
+	my ($url) = @_;
+
+	# First, get rid of the junk
+	$url = DhG_Trim($url);
+
+	# The we can translate URLs for sites that are known to have changed
+	# This could also cope with "virtual URLs", variables etc. TBD
+	# Nothing defined yet.
+
+	# Finally, return the munged URL
+	return $url;
 }
 
 # DhG_SetVariable() sets a variable to the given value
@@ -714,6 +732,9 @@ sub DhG_LoadCard_GetNextEvent
 		}
 		elsif ( $line =~ m{^\+} )
 		{
+			# New primary info line
+
+			# Output the current transcript if there is one
 			if ( $in_transcript )
 			{
 				if ( defined $transcript_text )
@@ -730,7 +751,6 @@ sub DhG_LoadCard_GetNextEvent
 				$in_transcript = 0;
 			}
 
-			# New primary info line
 			# Output the current source if there is one
 			if ( $in_source )
 			{
@@ -789,6 +809,9 @@ sub DhG_LoadCard_GetNextEvent
 		}
 		elsif ( $line =~ m{^\-} )
 		{
+			# New secondary info line
+
+			# Output the transcript if there is one.
 			if ( $in_transcript )
 			{
 				if ( defined $transcript_text )
@@ -805,23 +828,39 @@ sub DhG_LoadCard_GetNextEvent
 				$in_transcript = 0;
 			}
 
-			# New secondary info line - only process those that are part of source records
 			if ( $in_source )
 			{
+				# Secondary lines that are part of source records: we recognise URL and Transcript
 				if ( $line =~ m{^-URL} )
 				{
 					# A link to an arbitrary web site
-					my ($source_url) = $line =~ m{^\-URL (.*)$};
-					$source_url = DhG_Trim($source_url);
-					$source_link[$source_nLinks++] = "<a href=\"$source_url\">[link]</a>";
+					my ($url) = $line =~ m{^\-URL (.*)$};
+					$url = DhG_MungeUrl($url);
+					$source_link[$source_nLinks++] = "<a href=\"$url\">[link]</a>";
 				}
 				elsif ( $line =~ m{^-Transcript} )
 				{
+					# A transcript
 					($transcript_type) = $line =~ m{^-Transcript (.*)$};
 					$transcript_type = DhG_Trim($transcript_type) if ( defined $transcript_type );
 					$transcript_type = "pre" if ( !defined $transcript_type || $transcript_type eq "" );
 					$in_transcript = 1;
 					$transcript_text = undef
+				}
+			}
+			else
+			{
+				# Secondary lines that are parts of other info records
+				# Make sure there has been an info record first - ognore otherwise
+				if ( $info ne "" )
+				{
+					if ( $line =~ m{^-URL} )
+					{
+						# A link to an arbitrary web site
+						my ($url) = $line =~ m{^\-URL (.*)$};
+						$url = DhG_MungeUrl($url);
+						$info .= " <a href=\"$url\">[link]</a>";
+					}
 				}
 			}
 		}
