@@ -878,6 +878,7 @@ sub DhG_LoadCard_GetNextEvent
 							${$tref}[$t_index] = $tline;
 							$t_index++;
 							$source_link[$source_nLinks++] = "<a href=\"#transcript_$t_index\">[transcript $t_index]</a>";
+							$transcript_text = undef
 						}
 					}
 				}
