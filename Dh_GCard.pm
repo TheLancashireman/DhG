@@ -1771,6 +1771,8 @@ sub DhG_GetDescendantTreeTemplateVars
 	$nlines = DhG_AppendDescendantTree($id, 0, $privacy, 0,
 													\@a_level, \@a_name, \@a_file, \@a_spname, \@a_spfile);
 
+	my $last_update = strftime("%Y-%m-%d %H:%M GMT", gmtime());
+
 	my $template_vars =
 	{
 		title_name		=> $name,					# Name of person
@@ -1780,7 +1782,8 @@ sub DhG_GetDescendantTreeTemplateVars
 		name			=> \@a_name,				# For each line: name of person
 		file			=> \@a_file,				# For each line: base filename (for link)
 		spouse			=> \@a_spname,				# For each line: spouse/partner
-		spouse_file		=> \@a_spfile				# For each line: base filename for spouse/partner
+		spouse_file		=> \@a_spfile,				# For each line: base filename for spouse/partner
+		last_update		=> $last_update				# Date/time of last update
 	};
 
 	return $template_vars;
@@ -2028,6 +2031,8 @@ sub DhG_GetAhnentafelTemplateVars
 	$n_generations = DhG_GetAhnentafel($id, \@a_id, \@a_name, \@a_forename, \@a_surname, \@a_daterange, \@a_file);
 	$limit = 2 ** $n_generations;
 
+	my $last_update = strftime("%Y-%m-%d %H:%M GMT", gmtime());
+
 	my $template_vars =
 	{
 		title_name		=> $name,					# Name of person
@@ -2039,6 +2044,7 @@ sub DhG_GetAhnentafelTemplateVars
 		surname			=> \@a_surname,				# For each person: surname of person
 		daterange		=> \@a_daterange,			# For each person: DoB-DoD of person
 		file			=> \@a_file,				# For each person: base filename (for link)
+		last_update		=> $last_update				# Date/time of last update
 	};
 
 	return $template_vars;
