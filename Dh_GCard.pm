@@ -104,6 +104,8 @@ sub DhG_Trim;
 sub DhG_MungeUrl;
 sub DhG_FormatDate;
 sub DhG_GetTemplateDir;
+sub DhG_ReadTranscriptFile;
+sub DhG_ReadFileIntoVariable;
 
 # Initialisation, "global-my" variables go here.
 
@@ -112,6 +114,7 @@ my $DhG_DebugLevel = 0;
 my $DhG_OutputFormat = "none";
 my $DhG_DateFormat = "raw";
 my $DhG_CardBase = undef;
+my $DhG_TextBase = "/data/family-history/transcript";
 my $DhG_TemplateDir = "/data/family-history/tools/DhG/templates";
 
 # Internal variables
@@ -208,6 +211,11 @@ sub DhG_SetVariable
 		{
 			# Directory containing templates
 			$DhG_TemplateDir = $varvalue;
+		}
+		elsif ( $varname eq "TEXTBASE" )
+		{
+			# Base directory for transcript (.text) files
+			$DhG_TextBase = $varvalue;
 		}
 		else
 		{
@@ -848,6 +856,31 @@ sub DhG_LoadCard_GetNextEvent
 					$in_transcript = 1;
 					$transcript_text = undef
 				}
+				elsif ( $line =~ m{^-File} )
+				{
+					# A file source. Does it specify a Transcript file with the ".text" suffix?
+					my ($transcript_type) = $line =~ m{^\-File (.*)$};
+					$transcript_type = DhG_Trim($transcript_type);
+
+					if ( $transcript_type =~ m{^Transcript .*\.text$} )
+					{
+						# File is the correct type
+						my ($transcript_file) = $transcript_type =~ m{^Transcript (.*)$};
+						$transcript_file = DhG_Trim($transcript_file);
+						$transcript_text = DhG_ReadTranscriptFile($transcript_file);
+						if ( defined $transcript_text )
+						{
+							my $tline = "";
+							$tline .= "<pre>" if ( $mode eq "html" );
+							$tline .= $transcript_text;
+							$tline .= "</pre>" if ( $mode eq "html" );
+							$tline .= "\n";
+							${$tref}[$t_index] = $tline;
+							$t_index++;
+							$source_link[$source_nLinks++] = "<a href=\"#transcript_$t_index\">[transcript $t_index]</a>";
+						}
+					}
+				}
 			}
 			else
 			{
@@ -949,6 +982,8 @@ sub DhG_ClearDatabase
 	@DhG_Private = undef;
 	@DhG_Private_Calc = undef;
 	%DhG_NameGenderMap = ();
+
+	%DhG_TranscriptFiles = ();
 }
 
 # DhG_GetNewPersonTemplateVars() - creates template variables for new person card
@@ -2647,4 +2682,46 @@ sub DhG_EditFile
 	}
 	$cmd = $cmd." ".$filename;
 	system $cmd;
+}
+
+# DhG_ReadFileIntoVariable() - reads an entire file into a variable
+sub DhG_ReadFileIntoVariable
+{
+	my ($fn) = @_;
+	my $fc = undef;
+	my $f;
+
+	if ( -r $fn )
+	{
+		open $f, "<$fn";
+		$fc = join("", <$f>);
+		close $f;
+	}
+
+	return $fc;
+}
+
+# DhG_ReadTranscriptFile() - finds a transcript file then reads it into a variable
+sub DhG_ReadTranscriptFile
+{
+	my ($fn) = @_;
+
+	if ( ! -d $DhG_TextBase )
+	{
+		print STDERR "Transcript directory ($DhG_TextBase) does not exist.\n";
+		return undef;
+	}
+
+	my @fl = DhFL_FileList($DhG_TextBase);
+	my $i;
+
+	for ($i = 0; $i < $#fl; $i++)
+	{
+		if ( $fl[$i] =~ m{.*/$fn$} )
+		{
+			return DhG_ReadFileIntoVariable($fl[$i]);
+		}
+	}
+
+	return undef;
 }
