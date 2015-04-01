@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="" />
+  <meta name="author" content="TheLancashireman" />
+  <meta name="generator" content="DhG" />
+
+  <link  href="/styles/family-history.css" rel="stylesheet" type="text/css" media="screen" />
+  <script type="text/javascript" src="/styles/family-history.js"> </script>
+  <script type="text/javascript" src="/styles/collapsible.js"> </script>
+
+  <title>The Lancashireman's family history</title>
+</head>
+
+<body>
+  <div>
+    <table class="pagehead">
+      <tr class="pagehead">
+        <td class="pagehead_left">
+          <h1>The Lancashireman's family history</h1>
+        </td>
+        <td class="pagehead_right">
+          <a href="http://www.forl.co.uk/graphics.php">
+            <img style="border:0; width:100px; height:100px"
+                 src="/images/forlrose01.gif"
+                 alt="Red rose of Lancashire" />
+          </a>
+        </td>
+      </tr>
+    </table>
+    <div id="menubar" />
+  </div>
+
+  <hr/>
+
+  <h1>Index of surnames</h1>
+  <p>Click on the initial letters and the surnames to open and close the lists.</p>
+  <hr/>
+
+  <div id="pagetorso" class="index_letters">
+    <ul class="index_list">
+[% l = 0 -%]
+[% s = 0 -%]
+[% p = 0 -%]
+[% WHILE l < n_letters -%]
+[%   letter = index_letter.$l -%]
+[%   ns = n_surnames.$l -%]
+[%   l = l + 1 -%]
+[%   j = 0 -%]
+      <li id="start_[% letter %]" class="index_firstletter">
+        <span class="collapsible">[% letter %]</span>
+        <ul class="index_list">
+[%   WHILE j < ns -%]
+[%     sname = surnames.$s -%]
+[%     np = n_people.$s -%]
+[%     j = j + 1 -%]
+[%     s = s + 1 -%]
+[%     k = 0 -%]
+          <li id="[% sname %]" class="index_surname">
+            <span class="collapsible">[% sname %]</span>
+            <ul class="index_list">
+[%     WHILE k < np -%]
+[%       pname = person_name.$p -%]
+[%       fname = person_fname.$p -%]
+[%       fnamewithdir = person_fnamewithdir.$p -%]
+[%       k = k + 1 -%]
+[%       p = p + 1 -%]
+              <li id="[% fname %]" class="index_person">
+                <a href="cards/[% fnamewithdir %].html">[% pname %]</a>
+              </li>
+[%     END -%]
+            </ul>
+          </li>
+[%   END -%]
+        </ul>
+      </li>
+[% END -%]
+    </ul>
+  </div>
+
+
+  <hr/>
+  <table class="pagefoot">
+    <tr class="pagefoot">
+      <td class="pagefoot_left">
+        Last updated 2015-03-29 10:39 GMT<br/>
+        &copy; David Haworth<br/>
+        <a href="/about.html">About this site (Impressum)</a>.
+      </td>
+      <td class="pagefoot_centre">
+        <a href="http://www.forl.co.uk/">
+          <img style="border:0; width:384px; height:60px"
+               src="/images/dont_say.gif"
+               alt="Don't say Greater Manchester, Merseyside or Cumbria when you mean Lancashire" />
+        </a>
+      </td>
+      <td class="pagefoot_right">
+        <a href="http://validator.w3.org/check?uri=referer">
+          <img src="http://www.w3.org/Icons/valid-xhtml11"
+               alt="Valid XHTML 1.1" height="31" width="88" />
+        </a>
+        <a href="http://jigsaw.w3.org/css-validator/check/referer">
+          <img style="border:0; width:88px; height:31px"
+               src="http://jigsaw.w3.org/css-validator/images/vcss-blue"
+               alt="Valid CSS!" />
+        </a>
+      </td>
+    </tr>
+  </table>
+  <hr/>
+
+</body>
+
+</html>
+

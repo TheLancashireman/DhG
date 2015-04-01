@@ -33,13 +33,15 @@ use Exporter();
 	DhG_HtmlCard,
 	DhG_MultiHtmlCard,
 	DhG_HtmlDescTree,
-	DhG_HtmlAhnentafel
+	DhG_HtmlAhnentafel,
+	DhG_HtmlSurnameIndex
 );
 
 sub DhG_HtmlCard;
 sub DhG_MultiHtmlCard;
 sub DhG_HtmlDescTree;
 sub DhG_HtmlAhnentafel;
+sub DhG_HtmlSurnameIndex;
 
 my $tt = undef;
 
@@ -177,5 +179,28 @@ sub DhG_HtmlAhnentafel
 	else
 	{
 		print STDERR "Template generation failed: " . $tt->error() . "\n";
+	}
+}
+
+# DhG_HtmlSurnameIndex() - output an HTML index by surname
+# Collects all the data then uses Template.
+sub DhG_HtmlSurnameIndex
+{
+	my ($privacy) = @_;
+
+	DhG_HtmlInit();
+	return if ( !defined $tt );
+
+	my $template_vars = DhG_GetSurnameIndexTemplateVars($privacy, 'html');
+
+	my $htmlfilename = "html/surname-index.html";
+
+	if ( $tt->process("surname-index-html.tmpl", $template_vars, $htmlfilename) )
+	{
+		print STDOUT "Generated $htmlfilename\n";
+	}
+	else
+	{
+		print STDERR "Template generation failed: $tt->error()\n";
 	}
 }

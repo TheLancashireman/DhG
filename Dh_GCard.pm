@@ -72,6 +72,7 @@ use Exporter();
 	DhG_GetDescendantTreeTemplateVars,
 	DhG_GetAhnentafelTemplateVars,
 	DhG_GetNewPersonTemplateVars,
+	DhG_GetSurnameIndexTemplateVars,
 	DhG_GetPersonInfoLine,
 	DhG_Normalise,
 	DhG_Trim,
@@ -1286,10 +1287,10 @@ sub DhG_GetFilename
 	return $filename;
 }
 
-# DhG_GetFilebase() - returns the "base filename" for a person
+# DhG_GetFilebase() - returns the "base filename" for a person. Includes the surname directory
 sub DhG_GetFilebase
 {
-	my ($id) = @_;	# Parameter is person's ID
+	my ($id) = @_;	# 1st parameter is person's ID
 
 	return "" if ( !defined $id );
 
@@ -1298,6 +1299,23 @@ sub DhG_GetFilebase
 	$filename  = $DhG_FileList[$DhG_Fileno[$id]];
 
 	($basename) = $filename =~ m{^.*/([^/]+/[^/]+)\.card};
+
+	return $basename;
+}
+
+
+# DhG_GetFilebaseOnly() - returns the "base filename" for a person - no directory parts
+sub DhG_GetFilebaseOnly
+{
+	my ($id) = @_;	# 1st parameter is person's ID
+
+	return "" if ( !defined $id );
+
+	my ($filename, $basename);
+
+	$filename  = $DhG_FileList[$DhG_Fileno[$id]];
+
+	($basename) = $filename =~ m{^.*/([^/]+)\.card};
 
 	return $basename;
 }
@@ -2182,6 +2200,140 @@ sub DhG_GetAhnentafel
 	}
 
 	return $n_generations;
+}
+
+# DhG_GetSurnameIndexTemplateVars() - creates template variables for the surname index
+sub DhG_GetSurnameIndexTemplateVars
+{
+	my ($privacy, $format) = @_;
+	my %sorter = ();
+	my $n_letters = 0;
+	my @index_letter = ();
+	my @n_surnames = ();
+	my @surnames = ();
+	my @n_people = ();
+	my @person_name = ();
+	my @person_fname = ();
+	my $id;
+	my $key;
+	my ($p, $s, $l);
+	my ($curr_letter, $curr_sname);
+	my ($surname, $forename, $letter);
+
+	# First, build a hash containing a key,id pair for each person to index.
+	foreach $id ( 1 .. $#DhG_Name )
+	{
+		# Only defined names (ignore holes)
+		if ( defined $DhG_Name[$id] )
+		{
+			# Ignore private cards unless generating a private index.
+			if ( DhG_IsPrivate($id) && $privacy eq "public" )
+			{
+			}
+			else
+			{
+				$name = $DhG_Name[$id];
+				($forename, $surname) = DhG_SplitName($name);
+				$forename = "unknown" if ( $forename eq "_" );
+				$surname = "unknown" if ( $surname eq "_" );
+				$key = "$surname $forename $id";
+				$key =~ s/\s//g;
+				$sorter{$key} = $id;
+			}
+		}
+	}
+
+	# Now run through the sorted hash and fill in the arrays
+	$p = 0;
+	$s = -1;
+	$l = -1;
+	$curr_letter = "";
+	$curr_sname = "";
+
+	foreach $key (sort keys %sorter)
+	{
+		$id = $sorter{$key};
+		$name = $DhG_Name[$id];
+
+		# Put the name and filename into the main array
+		$person_name[$p] = $name;
+		my $r = DhG_GetYearRange($id);
+		$person_name[$p] .= " ($r)" if ( defined $r && $r ne "" );
+		$person_fname[$p] = DhG_GetFilebaseOnly($id);
+		$person_fnamewithdir[$p] = DhG_GetFilebase($id);
+
+		print "Index entry: $person_name[$p]  [$id]\n" if ($DhG_DebugLevel > 0 );
+		
+		($forename, $surname) = DhG_SplitName($name);
+		$forename = "unknown" if ( $forename eq "_" );
+		$surname = "unknown" if ( $surname eq "_" );
+
+		# Change of surname?
+		if ( $surname eq $curr_sname )
+		{
+			# Same as last one - increment the counter
+			$n_people[$s]++;
+		}
+		else
+		{
+			$s++;
+			$n_people[$s] = 1;
+			$surnames[$s] = $surname;
+			$curr_sname = $surname;
+
+			# Change of letter?
+			($letter) = $surname =~ m{^(.)};
+			if ( $letter eq $curr_letter )
+			{
+				# Same as last one - increment the counter
+				$n_surnames[$l]++;
+			}
+			else
+			{
+				$l++;
+				$n_surnames[$l] = 1;
+				$index_letter[$l] = $letter;
+				$curr_letter = $letter;
+				$n_letters++;
+			}
+		}
+		$p++;
+	}
+
+	if ( $DhG_DebugLevel > 0 )
+	{
+		$s = 0;
+		print "Summary:\n";
+		foreach $l ( 0 .. $#index_letter )
+		{
+			print "= $index_letter[$l] =\n";
+			print "$surnames[$s]";
+			$s++;
+			for ( my $i = 1; $i < $n_surnames[$l]; $i++ )
+			{
+				print ", $surnames[$s]";
+				$s++;
+			}
+			print "\n";
+		}
+	}
+
+	my $last_update = strftime("%Y-%m-%d %H:%M GMT", gmtime());
+
+	my $template_vars =
+	{
+		n_letters		=> $n_letters,				# Number of first letters 
+		index_letter	=> \@index_letter,			# Array of first letter of surname
+		n_surnames		=> \@n_surnames,			# Array of no. of surnames for each letter
+		surnames		=> \@surnames,				# Array of all surnames
+		n_people		=> \@n_people,				# Array of no. of people for each surname
+		person_name		=> \@person_name,			# For each person: the name to display
+		person_fname	=> \@person_fname,			# For each person: base filename
+		person_fnamewithdir	=> \@person_fnamewithdir,	# For each person: base filename including subdirectory
+		last_update		=> $last_update				# Date/time of last update
+	};
+
+	return $template_vars;
 }
 
 #======================================================================================

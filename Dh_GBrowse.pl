@@ -45,6 +45,10 @@ my @commands =
 	"hpd",
 	"htmlanc",
 	"ha",
+	"htmlindex",
+	"hi",
+	"htmlprivindex",
+	"hpi",
 	"list",
 	"new",
 	"quit",
@@ -284,6 +288,15 @@ while ( defined ($line = $term->readline($prompt)) )
 					DhG_HtmlAhnentafel($uniq);
 				}
 			}
+			elsif ( $cmd eq "htmlindex" || $cmd eq "hi" ||
+					$cmd eq "htmlprivindex" || $cmd eq "hpi" )
+			{
+				my $privacy = "public";
+
+				$privacy = "all" if ( $cmd eq "htmlprivindex" || $cmd eq "hprid" );
+
+				DhG_HtmlSurnameIndex($privacy);
+			}
 			elsif ( $cmd eq "zzz" )
 			{
 				DhG_Test($params);
@@ -325,8 +338,12 @@ sub DhG_PrintHelp
 	print STDERR "hpd                      = (alias for htmlprivdesc)\n";
 	print STDERR "htmlanc                  = Output an ancestor tree (Ahnentafel) in HTML\n";
 	print STDERR "ha                       = (alias for htmlanc)\n";
+	print STDERR "htmlindex                = Output a name index in HTML\n";
+	print STDERR "hi                       = (alias for htmlindex)\n";
+	print STDERR "htmlprivindex            = Output a private name index in HTML\n";
+	print STDERR "hpi                      = (alias for htmlprivindex)\n";
 	print STDERR "\n";
-	print STDERR "(c) 2014  David Haworth (dave\@fen-net.de; http://thelancashireman.org)\n";
+	print STDERR "(c) David Haworth (dave\@fen-net.de; http://thelancashireman.org)\n";
 	print STDERR "DhG comes with ABSOLUTELY NO WARRANTY. It is free free software, and you are welcome\n";
 	print STDERR "to redistribute it under certain conditions; please read the accompanying file\n";
     print STDERR "gpl-3.0.txt for details.\n";
