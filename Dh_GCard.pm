@@ -1856,7 +1856,7 @@ sub DhG_AppendDescendantTree
 	my @sp_ids = ();
 	my %children;
 	my $c_id;
-	my $i;
+	my $n_spouses;
 
 	# Get the name and the birth and death dates.
 	$name = DhG_GetName($id);
@@ -1879,15 +1879,15 @@ sub DhG_AppendDescendantTree
 		@sp_dates = split /\|/,$DhG_Marriage_Dates[$id];
 		@sp_ids = split /\|/,$DhG_Marriage_Ids[$id];
 
-		my $i = 0;
+		$n_spouses = 0;
 
-		while ( defined $spouses[$i] )
+		while ( defined $spouses[$n_spouses] )
 		{
 			
-			$partner_by_date{$sp_dates[$i]} = $i;
-			$partner{$spouses[$i]} = $i;
+			$partner_by_date{$sp_dates[$n_spouses]} = $n_spouses;
+			$partner{$spouses[$n_spouses]} = $n_spouses;
 
-			$i++;
+			$n_spouses++;
 		}
 	}
 
@@ -1906,6 +1906,7 @@ sub DhG_AppendDescendantTree
 				$p_name = $DhG_Mother_Name[$c_id];
 				$p_id = $DhG_Mother_Id[$c_id];
 				$is_child = 1;
+#				print STDERR "Father. Mother is $p_name\n";
 			}
 			elsif ( defined $DhG_Mother_Id[$c_id] && $DhG_Mother_Id[$c_id] == $id )
 			{
@@ -1913,6 +1914,7 @@ sub DhG_AppendDescendantTree
 				$p_name = $DhG_Father_Name[$c_id];
 				$p_id = $DhG_Father_Id[$c_id];
 				$is_child = 1;
+#				print STDERR "Mother. Father is $p_name\n";
 			}
 			else
 			{
@@ -1922,33 +1924,7 @@ sub DhG_AppendDescendantTree
 
 			if ( $is_child )
 			{
-				# This is a child of our person. Record the other parent as a partner.
-				if ( defined $p_name )
-				{
-					# Only add other parent as partner if not already there ---
-					# we don't want to overwrite a marriage date!
-					if ( defined $partner{$p_name} )
-					{
-					}
-					else
-					{
-						# Ensure a "-" is used for an undefined id here.
-						if ( defined $p_id )
-						{
-							push @sp_ids, $p_id;
-						}
-						else
-						{
-							push @sp_ids, "-";
-						}
-
-						push @spouses, $p_name;
-						push @sp_dates, $DhG_Birth_Date[$c_id];		# Use child's DoB for "marriage" date
-
-						$partner_by_date{$DhG_Birth_Date[$c_id]} = $#spouses - 1;
-						$partner{$p_name} = $#spouses - 1;
-					}
-				}
+				# This is a child of our person.
 
 				# Record the child along with (modified) DoB (don't format this one!)
 				my $c_dob = $DhG_Birth_Date[$c_id];
@@ -1964,6 +1940,36 @@ sub DhG_AppendDescendantTree
 				}
 
 				$children{$c_dob} = $c_id;
+
+				# This is a child of our person. Record the other parent as a partner.
+				if ( !defined $p_name )
+				{
+					$p_name = "unknown";
+				}
+
+				# Only add other parent as partner if not already there ---
+				# we don't want to overwrite a marriage date!
+				if ( defined $partner{$p_name} )
+				{
+				}
+				else
+				{
+					# Ensure a "-" is used for an undefined id here.
+					if ( !defined $p_id )
+					{
+						$p_id = "-";
+					}
+
+					push @sp_ids, $p_id;
+					push @spouses, $p_name;
+					push @sp_dates, $c_dob;		# Use child's DoB for "marriage" date
+
+#						print STDERR "Push $p_name $p_id $c_dob\n";
+
+					$partner_by_date{$c_dob} = $n_spouses;
+					$partner{$p_name} = $n_spouses;
+					$n_spouses++;
+				}
 			}
 		}
 	}
@@ -1980,6 +1986,7 @@ sub DhG_AppendDescendantTree
 		my ($p_name, $p_id, $p_years, $p_printname, $p_file);
 		$p_name = $spouses[$partner_idx];
 		$p_id = $sp_ids[$partner_idx];
+#		print STDERR "$partner_idx $p_name [$p_id] $partnerdate\n";
 
 		if ( $p_id eq "-" )
 		{
@@ -2868,7 +2875,7 @@ sub DhG_ReadTranscriptFile
 	my @fl = DhFL_FileList($DhG_TextBase);
 	my $i;
 
-	for ($i = 0; $i < $#fl; $i++)
+	for ($i = 0; $i <= $#fl; $i++)
 	{
 		if ( $fl[$i] =~ m{.*/$fn$} )
 		{
