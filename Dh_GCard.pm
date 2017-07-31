@@ -115,8 +115,8 @@ my $DhG_DebugLevel = 0;
 my $DhG_OutputFormat = "none";
 my $DhG_DateFormat = "raw";
 my $DhG_CardBase = undef;
-my $DhG_TextBase = "/data/family-history/transcript";
-my $DhG_TemplateDir = "/data/tools/DhG/templates";
+my $DhG_TextBase = "/data1/family-history/transcript";
+my $DhG_TemplateDir = "/data1/tools/DhG/templates";
 
 # Internal variables
 my $outputfile_name = undef;
