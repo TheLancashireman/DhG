@@ -1,0 +1,64 @@
+0 HEAD
+1 SOUR DhG
+1 FILE [% gedcomfile %]
+1 GEDC
+2 VERS 4.0
+1 CHAR UTF8
+
+[%  i = 0 -%]
+[%  WHILE i < n_indi -%]
+0 @I[% indi_id.$i %]@ INDI
+1 NAME [% indi_forename.$i %] /[% indi_surname.$i %]/
+[%      if indi_gender.$i != "" -%]
+1 SEX  [% indi_gender.$i %]
+[%      END -%]
+[%      if indi_birth_date.$i != "" -%]
+1 BIRT
+2 DATE [% indi_birth_date.$i %]
+[%          if indi_birth_place.$i != "" -%]
+2 PLAC [% indi_birth_place.$i %]
+[%          END -%]
+[%      END -%]
+[%      if indi_death_date.$i != "" -%]
+1 DEAT
+2 DATE [% indi_death_date.$i %]
+[%          if indi_death_place.$i != "" -%]
+2 PLAC [% indi_death_place.$i %]
+[%          END -%]
+[%      END -%]
+[%      j = 0 -%]
+[%      f = indi_fams_0.$i -%]
+[%      WHILE j < indi_nfams.$i -%]
+1 FAMS $F[% indi_fams.$f %]@
+[%          f = f + 1 -%]
+[%          j = j + 1 -%]
+[%      END -%]
+[%      j = 0 -%]
+[%      f = indi_famc_0.$i -%]
+[%      WHILE j < indi_nfamc.$i -%]
+1 FAMC $F[% indi_famc.$f %]@
+[%          f = f + 1 -%]
+[%          j = j + 1 -%]
+[%      END -%]
+[%      i = i + 1 -%]
+[%  END -%]
+
+[%  f = 0 -%]
+[%  WHILE f < n_fam -%]
+0 @F[% fam_id.$f %]@ FAM
+1 HUSB @I[% fam_husband.$f %]@
+1 WIFE @I[% fam_wife.$f %]@
+1 MARR
+2 DATE [% fam_marriage_date.$f %]
+2 PLAC [% fam_marriage_place.$f %]
+[%      j = 0 -%]
+[%      c = fam_child_0.$f -%]
+[%      WHILE j < fam_nchildren.$f -%]
+1 CHIL $I[% fam_children.$c %]@
+[%          c = c + 1 -%]
+[%          j = j + 1 -%]
+[%      END -%]
+[%      f = f + 1 -%]
+[%  END -%]
+
+0 TRLR
