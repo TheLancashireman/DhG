@@ -12,5 +12,5 @@ There's lots to do.
 * The graphical stuff is work-in-suspension.
 * There are some hard-coded directories that need to be changed to use
   environment and/or the 'set' command
-* Move the user's guide to the repository and make the version at thelancasdhireman.org
+* Move the user's guide to the repository and make the version at thelancashireman.org
   into a wrapper.
