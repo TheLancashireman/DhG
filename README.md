@@ -14,7 +14,7 @@ The text file approach means that you always have full control of your data
 
 There's lots to do.
 
-* The graphical stuff is work-in-progress. "Work-in-suspended-animation" would be more accurate.
+* The graphical stuff is experimental work-in-progress. "Work-in-suspended-animation" would be more accurate.
 * The GEDCOM features are also wishful thinking.
 * There are some hard-coded directories that need to be changed to use
   environment and/or the 'set' command
