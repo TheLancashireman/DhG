@@ -1,0 +1,547 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="" />
+  <meta name="author" content="TheLancashireman" />
+  <meta name="generator" content="vi" />
+
+  <link  href="/styles/family-history.css" rel="stylesheet" type="text/css" media="screen" /> 
+
+  <title>DhG user's guide</title>
+</head>
+
+<body>
+   <h1>DhG User's Guide</h1>
+   <div id="QuickStart">
+    <h2>Quick start</h2>
+    <p>Run the program, use the <i>new</i> command to create files for all the people in your family tree,
+      use the <i>reload</i> command to make sure the information has been loaded, then create
+      family trees using the <i>ancestor</i> and <i>descendant</i> commands. Easy peasy :-) </p>
+    <p>But seriously ...</p>
+   </div>
+
+   <div id="PrincipleOfOperation">
+    <h2>Principle of operation</h2>
+    <p><strong>DhG</strong> uses structured text files to store information about individuals in your family tree.
+      These files are called "cards" and have the suffix ".card" - a bit like electronic versions
+      of cards in a card index. Each card contains information about a single person.
+      The information that is stored can be as little or as much as you like,
+      but for the family analysis to work each person's father and mother are needed wherever possible.
+      Other information such as birth, baptism, marriage, death, burial and census records can be
+      stored. Parent to child relationships are not stored in the parents' cards but are inferred from the
+      children's cards.</p>
+    <p><strong>DhG</strong> does not store this information itself; rather, it directs you to create the cards using
+      a normal text editor. Apart from the step of initially creating a person's card, <strong>DhG</strong> does not
+      modify any of the cards. It simply uses the information in the cards to construct relationships
+      and produce various reports in plain text and HTML format. This method of operation means that
+      you can safely close <strong>DhG</strong> at any time without losing any data. It also means that several
+      instances of <strong>DhG</strong> can be running on the same database at the same time, but if you do this
+      you need to take care when editing cards and especially when creating new ones; there is a danger
+      that the same unique number will be allocated to two different people.</p>
+   </div>
+
+   <div id="CommandDrivenOperation">
+    <h2>Command-driven operation</h2>
+    <p><strong>DhG</strong>, or more precisely its browser program <strong>Dh_GBrowse</strong>, runs in a terminal
+      window and uses a command interface. At the "What now?" prompt you type in a command and <tt>Dh_GBrowse</tt>
+      does what the command tells it to do.</p>
+    <p><tt>Dh_GBrowse</tt> uses the <tt>readline</tt> library to accept commands. This means that
+      you can recall commands from the list you have already typed using the up-arrow and down-arrow
+      keys. You can edit commands by using the left-arrow and right-arrow keys to move the cursor,
+      insert new characters by typing them and delete characters by using DEL or BACKSPACE.
+      Filename completion is available by pressing TAB, but this is of limited use because
+      <tt>Dh_GBrowse</tt>'s use of files and directories is mostly hidden.</p>
+    <p>The commands you type can be abbreviated to the first few characters, but you must type
+      enough characters for the command to be unambiguous.</p>
+   </div>
+
+   <div id="StructureOfACard">
+    <h2>Structure of a card</h2>
+    <p>The following example illustrates how a card should be written. The exact layout is not
+      very important - the number of spaces, for example, can be chosen to make the cards easy to
+      read. What is important is the line structure and the grouping of lines. The order of events
+      in the card is used when an HTML card for the person is produced, otherwise it plays no role
+      in the analysis.</p>
+    <pre><tt>
+Name:       Fred Bloggs
+Uniq:       222
+Male
+Father:     Joe Bloggs [123]
+Mother:     Ada McTiggle [136]
+Version:    2
+
+
+1827-04-22  Birth
++Source     Baptism record
+
+1827-05-01  Baptism
++Place      St Never, Much Binding in the Marsh
++Source     Baptism certificate
+-File       Image       BAP-1827-FredBloggs.png
++Source     Genealogic
+-URL        http://genealogic.org/parishes/StNeverMuchBinding.html#1283
+-Transcript
+| 1827 1st May  Fred son of Joe and Ada Bloggs  Born 22nd April   Rev. Tarquin Fintimlimbim
+
+1853-04-23  Marriage    Ethel Gumby [247]
++Place      St Away, Little Binding
++Age        26
++Source     Marriage certificate
+-File       Image       MC-1853-FredBloggs-EthelGumby.jpeg
+
+1877-09-17  Death
++Abode      Rose Cottage, Much Binding
++Age        50
++Source     Death certificate
+-File       Image       DC-1877-FredBloggs.png
++Source     Gravestone (see Burial)
+
+1877-09-20  Burial
++Place      Grave 412, St Never Churchyard, Much Binding
++Source     Gravestone
+-File       Photo       Gravestone-StNever-Bloggs-1.jpeg
+    </tt></pre>
+    <p>This is a fairly simple card file,  but contains all the necessary elements for <strong>DhG</strong> to
+      analyse Fred's relationships and place him into the family tree. Let's look at the individual
+      lines in this file one at a time...
+    <pre><tt>
+      Name:       Fred Bloggs</tt></pre>
+      This is the person's name. Everybody has one, so it has to be present. In some cases you might
+      only know part of the name. For example, the mother's maiden name might not be known, or the
+      forename of a child might not be known if you're gathering information from relatives. In these
+      cases it's useful to use a placeholder such as "unknown". I frequently use "_". It may also be useful
+      to create a card file for someone for whom no name is known. This happens in older baptism records
+      when only the father's name was given - but you know that a mother must have existed.
+    <pre><tt>
+      Uniq:       222</tt></pre>
+      This is the unique identifier that is assigned to the person. Every person must have an identifier,
+      and the identifier must be a positive number. Don't use 0. <tt>Dh_GBrowse</tt> automatically assigns
+      a unique identifier when you use the "new" command.
+    <pre><tt>
+      Male</tt></pre>
+      The person's gender. "Female" is also valid. <tt>Dh_GBrowse</tt> doesn't use this for any practical
+      purpose at the moment, although it might be of use for future features. When <tt>Dh_GBrowse</tt>
+      starts (or when the "reload" command is used), it notes the relationship between first name
+      and gender, so that (given a large enough database) the gender of a new person can be guessed.
+      A message like "Rennie could be a M or F name" at startup simply means that there are several
+      people called Rennie in the database; some male and some female.
+    <pre><tt>
+      Father:     Joe Bloggs [123]</tt></pre>
+      This indicates who Fred's father was. The name makes the card file nicely readable and the
+      unique identifier (in brackets) guarantees that <tt>Dh_GBrowse</tt> finds the correct
+      person when analysing the relationships.
+    <pre><tt>
+      Mother:     Ada McTiggle [136]</tt></pre>
+      This indicates who Fred's mother was. McTiggle was her maiden name.
+    <pre><tt>
+      Version:    2</tt></pre>
+      This indicates that the card uses version 2 of the card layout specification. If this
+      line is omitted, nothing bad will happen because <strong>DhG</strong> only supports version 2 now. However,
+      it's a good idea to leave it in place in case the structure changes again.
+    <pre><tt>
+      1827-04-22  Birth</tt></pre>
+      This line is the start of a "Birth" event. It gives the date of birth. <strong>DhG</strong> uses
+      the date in the reports.
+      <strong>DhG</strong> treats any line that starts with a numeric digit or '?' as the start of an event; the
+      first field (up to the first space) is the date of the event. The complete set of
+      <a href="#DateFormat">date formats</a> is described later.
+      For all types of event, the following lines of text provide extra information about the event.
+      The lines starting with a '+' symbol are primary information. Lines starting with a '-' symbol
+      are secondary information - these are usually file names, URLs etc. relating to +Source lines.
+      Lines starting with '|' are continuation lines and are usually used with a -Transcript line.
+      following lines that start with '+', '-' or '|' provide extra information about this event.
+    <pre><tt>
+      +Source     Baptism record</tt></pre>
+      This line indicates the source of the information about the date of birth. In this case,
+      the date comes from the baptism record, which is recorded below the birth record.
+    <pre><tt>
+      1827-05-01  Baptism</tt></pre>
+      The start of another event; in this case, Fred's baptism.
+    <pre><tt>
+      +Place      St Never, Much Binding in the Marsh</tt></pre>
+      A primary information line providing more information about the event. In this case, where
+      the event took place.
+    <pre><tt>
+      +Source     Baptism certificate</tt></pre>
+      The source of information is Fred's baptism certificate.
+    <pre><tt>
+      -File       Image       BAP-1827-FredBloggs.png</tt></pre>
+      A secondary information line; in this case indicating that the source (the baptism certificate)
+       can be found in a file called <tt>BAP-1827-FredBloggs.png</tt>.
+       I don't put the full path name to files into the cards; it gives me the freedom to rearrange
+       my computer without having to edit all my cards.
+       Searching for files is a routine job for computers, and to speed things up there are various
+       indexing programs available.
+    <pre><tt>
+      +Source     Genealogic</tt></pre>
+      Another source; in this case a fictitious website called Genealogic that purportedly provides
+      parish records.
+    <pre><tt>
+      -URL        http://genealogic.org/parishes/StNeverMuchBinding.html#1283</tt></pre>
+      Another example of a secondary information line. In this case, it's the URL of the transcript. Be wary of
+       pay-to-view sites here; if you use the HTML features of <strong>DhG</strong> to create a website, your
+       visitors might not be able to see the record. Even worse - they might get charged unexpectedly!
+    <pre><tt>
+      -Transcript
+      | 1827 1st May  -  Fred son of Joe and Ada Bloggs  -  Born 22nd April  -   Rev. Tarquin Featherstonehaugh</tt></pre>
+      Another secondary information line about the Genealogic source. It's a transcript of the record. Note
+      the continuation line starting with '|'.
+    <pre><tt>
+      1853-04-23  Marriage    Ethel Gumby [247]</tt></pre>
+      Another event, in this case Fred's marriage. Note that the spouse is named on the same line.
+    <pre><tt>
+      +Place      St Away, Little Binding
+      +Age        26
+      +Source     Marriage certificate
+      -File       Image       MC-1853-FredBloggs-EthelGumby.jpeg</tt></pre>
+	  Further information about the marriage, presumably extracted from the marriage certificate.
+
+    <pre><tt>
+      1877-09-17  Death</tt></pre>
+      Fred's death
+    <pre><tt>
+      +Abode      Rose Cottage, Much Binding
+      +Age        50
+      +Source     Death certificate
+      -File       Image       DC-1877-FredBloggs.png</tt></pre>
+      Further information about Fred's death, extracted from the source.
+    <pre><tt>
+      1877-09-20  Burial
+      +Place      Grave 412, St Never Churchyard, Much Binding
+      +Source     Gravestone
+      -File       Photo       Gravestone-StNever-Bloggs-1.jpeg</tt></pre>
+      Fred's burial in the churchyard. </p>
+    <p></p>
+    <p>As you can see, the card structure is quite straightforward. For most of its functions, <strong>DhG</strong>
+      only uses the name, the unique number, the father and mother and the birth, marriage and death events.
+      The other information is used when creating HTML versions of the index cards for use on a
+      website.</p>
+    <p>The event types and the keywords for primary and secondary information lines are flexible; you can
+      add your own custom types if you like. <strong>DhG</strong> only uses the first word of the event type
+      and the rest of the line is ignored. There are two exceptions to this behaviour; the Marriage event
+      identifies the spouse, and there is an event type called "Misc", where the rest of the line is used as
+      a description of the event.</p>
+    <p>The standard event types and information keywords are shown in the <a href="#Keywords">keywords</a>
+      section.</p>
+   </div>
+
+   <div id="ListOfCommands">
+    <h2>List of commands</h2>
+    <dl>
+      <di>
+        <dt><strong>help</strong></dt>
+        <dd>Print a list of commands and a brief description for each.</dd>
+      </di>
+      <di>
+        <dt><strong>list</strong></dt>
+        <dd>List all people in the database.</dd>
+      </di>
+      <di>
+        <dt><strong>family &lt;person&gt;</strong></dt>
+        <dd>Print the immediate family of a single person.</dd>
+      </di>
+      <di>
+        <dt><strong>descendants &lt;person&gt;</strong></dt>
+        <dd>Print all descendants of a single person.</dd>
+      </di>
+      <di>
+        <dt><strong>ancestors &lt;person&gt;</strong></dt>
+        <dd>Print all ancestors of a single person.</dd>
+      </di>
+      <di>
+        <dt><strong>search &lt;pattern&gt;</strong></dt>
+        <dd>Print names of people that match given terms.</dd>
+      </di>
+      <di>
+        <dt><strong>find &lt;pattern&gt;</strong></dt>
+        <dd>Print names of people that match given terms.</dd>
+      </di>
+      <di>
+        <dt><strong>quit</strong></dt>
+        <dd>Close the program.</dd>
+      </di>
+      <di>
+        <dt><strong>edit &lt;person&gt;</strong></dt>
+        <dd>Edit a person's card.</dd>
+      </di>
+      <di>
+        <dt><strong>vi</strong></dt>
+        <dd>Alias for <i>edit</i>.</dd>
+      </di>
+      <di>
+        <dt><strong>reload</strong></dt>
+        <dd>Reload the database.</dd>
+      </di>
+      <di>
+        <dt><strong>set &lt;name&gt;=&lt;value&gt;</strong></dt>
+        <dd>Set a variable.</dd>
+      </di>
+      <di>
+        <dt><strong>htmlcard &lt;person&gt;</strong></dt>
+        <dd>Output a card file in HTML.</dd>
+      </di>
+      <di>
+        <dt><strong>htmlcard all</strong></dt>
+        <dd>Output a card file in HTML for every person in the database.</dd>
+      </di>
+      <di>
+        <dt><strong>htmlcard public</strong></dt>
+        <dd>Output a card file in HTML for every "public" person in the database.</dd>
+      </di>
+      <di>
+        <dt><strong>hc</strong></dt>
+        <dd>Alias for htmlcard.</dd>
+      </di>
+      <di>
+        <dt><strong>htmldesc &lt;person&gt;</strong></dt>
+        <dd>Output a public descendant tree in HTML.</dd>
+      </di>
+      <di>
+        <dt><strong>htmldesc @&lt;filename&gt;</strong></dt>
+        <dd>Output a public descendant tree in HTML for each person listed in the file.</dd>
+      </di>
+      <di>
+        <dt><strong>hd</strong></dt>
+        <dd>Alias for htmldesc.</dd>
+      </di>
+      <di>
+        <dt><strong>htmlprivdesc &lt;person&gt;</strong></dt>
+        <dd>Output a private descendant tree in HTML.</dd>
+      </di>
+      <di>
+        <dt><strong>htmlprivdesc @&lt;filename&gt;</strong></dt>
+        <dd>Output a private descendant tree in HTML for each person listed in the file.</dd>
+      </di>
+      <di>
+        <dt><strong>hpd</strong></dt>
+        <dd>Alias for htmlprivdesc.</dd>
+      </di>
+      <di>
+        <dt><strong>htmlanc</strong></dt>
+        <dd>Output an ancestor tree (Ahnentafel) in HTML.</dd>
+      </di>
+      <di>
+        <dt><strong>ha</strong></dt>
+        <dd>Alias for <i>htmlanc</i>.</dd>
+      </di>
+    </dl>
+   </div>
+   <p>A <strong>person</strong> is specified either by name or by unique identifier. If a name is given
+     <strong>DhG</strong> uses a search algorithm rather than an exact match, so you can just type
+     in some parts of the name, such as "Fre Bl" if you want Fred Bloggs. If there's more than one
+     match, <strong>DhG</strong> prints a list of matches instead of performing the command. You can
+     then repeat the command using a better match; alternatively (and more likely) you can use the
+     unique identifier.</p>
+   <p>The <strong>pattern</strong> for the <i>search</i> and <i>find</i> commands works just like
+     the name variant for specifying a person.</p>
+   <p>A "private" person is one who is still alive (i.e. for whom no death is recorded), or who has
+     been explicitly marked as private using "Private" on a line by itself in the card (usually
+     in the header near the name. In any given family, a whole generation will be treated as
+     private if any one of them or their spouses, siblings, siblings of spouses, spouses of siblings etc.
+     is alive of marked as private.</p>
+   <p>The <i>set</i> command is used to set internal variables. The variables that are recognised
+     are <strong>DBG</strong>, <strong>FORMAT</strong>, <strong>DATE</strong> and <strong>CARDBASE</strong>.
+    <dl>
+      <di>
+        <dt><strong>DBG</strong></dt>
+        <dd>The "debug" level (a number from 0 upwards), which controls how much diagnostic
+          information is printed. Leave at the default of 0 for normal operation.</dd>
+      </di>
+      <di>
+        <dt><strong>FORMAT</strong></dt>
+        <dd>No longer used.</dd>
+      </di>
+      <di>
+        <dt><strong>DATE</strong></dt>
+        <dd>Controls the format of the date when printing or generating HTML output. Possible
+          values are <strong>raw</strong>, <strong>yearonly</strong>, <strong>noquarter</strong>.</dd>
+      </di>
+      <di>
+        <dt><strong>CARDBASE</strong></dt>
+        <dd>Specifies the directory where new card files will be created. New files will be created
+          in a subdirectory of this directory by the surname. E.g. Fred Bloggs' card file would
+          be called $CARDBASE/Bloggs/FredBloggs-222.card. By using CARDBASE, you can separate the
+          major branches of your tree into different directories.</dd>
+      </di>
+    </dl>
+   </div>
+   <div id="Keywords">
+    <h2>List of keywords</h2>
+    <p>The following is a list of the keywords that I use in my files. <strong>DhG</strong> only
+      attaches a special meaning to a small subset of these keywords and the rest are just used
+      as labels. However, if you use the same keywords that I use, then your database will be
+      compatible with future features.</p>
+    <div>
+     <h3>Header keywords</h3>
+     <p>Header keywords are used either alone on a line or followed by a colon and a value.</p>
+     <dl>
+       <di>
+         <dt>Name</dt><dd>The name of the person in this card file. The name is a set of
+           strings separated by spaces. The first one is considered to be the forename, the
+           last one the surname. A double-barrelled surname like Ponsomby-Smythe should work
+           but I haven't tested it because I haven't found one in my tree yet.</dd>
+       </di>
+       <di>
+         <dt>Uniq</dt><dd>The numerical unique identifier of the person in the card file. This
+           must be a number from 1 upwards and must be unique in the entire database.</dd>
+       </di>
+       <di>
+         <dt>Version</dt><dd>The version of the card file structure. Should be 2 if used.</dd>
+       </di>
+       <di>
+         <dt>Male</dt><dd>The gender of the person in the card file. Used alone (no value).</dd>
+       </di>
+       <di>
+         <dt>Female</dt><dd>The gender of the person in the card file. Used alone (no value).</dd>
+       </di>
+       <di>
+         <dt>Public</dt><dd>Indicates that this is a "public" person. I'm not sure this is used
+           at the moment. Used alone (no value).</dd>
+       </di>
+       <di>
+         <dt>Private</dt><dd>Forces a dead person to be treated as private. Used alone (no value).</dd>
+       </di>
+       <di>
+         <dt>Father</dt><dd>Names the father of the person in the card file. The name should
+           be specified in full including the unique identifier.</dd>
+       </di>
+       <di>
+         <dt>Mother</dt><dd>Names the mother of the person in the card file. The name should
+           be specified in full including the unique identifier.</dd>
+       </di>
+      </dl>
+    </div>
+    <div>
+     <h3>Event keywords</h3>
+     <p>Events are specified by a line containing a date, an event keyword and (for some event types)
+       some extra information.</p>
+     <dl>
+       <di>
+         <dt>Birth</dt><dd>The birth of the person in this card file. No extra information.
+           The date of the event is used by DhG.</dd>
+       </di>
+       <di>
+         <dt>Baptism</dt><dd>The baptism of the person in this card file. No extra information.</dd>
+       </di>
+       <di>
+         <dt>Marriage</dt><dd>A marriage of the person in this card file. The spouse is specified
+           in the extra information. This information is used when constructing family trees and is
+           especially useful for childless marriages.</dd>
+       </di>
+       <di>
+         <dt>Death</dt><dd>The death of the person in this card file.. No extra information.
+           The date of the event is used by DhG.</dd>
+       </di>
+       <di>
+         <dt>Burial</dt><dd>The burial of the person in this card file. No extra information.</dd>
+       </di>
+       <di>
+         <dt>Census</dt><dd>A census record for the person in this card file. No extra information.</dd>
+       </di>
+       <di>
+         <dt>Misc</dt><dd>An event in the person's life. The extra information in this event type
+           is used as the event type when creating an HTML card file for the person. This is
+           how to get multiplle words like "Military service" into the HTML timeline.</dd>
+       </di>
+      </dl>
+    </div>
+    <div>
+     <h3>Primary information keywords</h3>
+     <p>After an event, lines starting with a '+' character are treated as primary information
+       for the event, such as place, age etc. The lines are intended to contain information
+       that is extracted from records of the event and is only as accurate as those records.</p>
+     <p>Most of these keywords are not interpreted in any special way by DhG, so these are just
+       examples.</p>
+     <dl>
+       <di>
+         <dt>Place</dt><dd>Where the event took place.</dd>
+       </di>
+       <di>
+         <dt>Abode</dt><dd>Where the person was living at the time of the event.</dd>
+       </di>
+       <di>
+         <dt>Age</dt><dd>The age of the person at the time of the event.</dd>
+       </di>
+       <di>
+         <dt>After</dt><dd>The earliest possible date for the event.</dd>
+       </di>
+       <di>
+         <dt>Before</dt><dd>The latest possible date for the event.</dd>
+       </di>
+       <di>
+         <dt>Birthplace</dt><dd>The place of birth of the person.</dd>
+       </di>
+       <di>
+         <dt>Until</dt><dd>For events with a duration (e.g. military service): the end date of the event.</dd>
+       </di>
+       <di>
+         <dt>Todo</dt><dd>A reminder that the information isn't complete :-).</dd>
+       </di>
+       <di>
+         <dt>Informant</dt><dd>The informant (e.g. from a death certificate).</dd>
+       </di>
+       <di>
+         <dt>Witness</dt><dd>A witness (e.g. from a marriage certificate).</dd>
+       </di>
+       <di>
+         <dt>Occupation</dt><dd>The person's occupation at the time of the event.</dd>
+       </di>
+       <di>
+         <dt>Theory</dt><dd>A remark by the database editor indicating what might be the reason
+           for strange-looking information.</dd>
+       </di>
+       <di>
+         <dt>Source</dt><dd>A source for the information about the event. Source lines
+          are used by DhG when constructing HTML cards and are placed in a specal column.
+          If a secondary URL line is present (see below), the source name is converted to a link.</dd>
+       </di>
+      </dl>
+    </div>
+    <div>
+     <h3>Secondary information keywords</h3>
+     <p>After a primary information keyword there can be secondary information keywords. At the
+       moment, these only apply to the Source lines, and are used to indicate where
+       the source material can be found. As usual, they are flexible. Very few are actually
+       interpreted by DhG.</p>
+     <dl>
+       <di>
+         <dt>File</dt><dd>A file on the local PC containing an image or transcript of
+           the record. The file name is preceded by the type (Transcript, Image, Photo
+           etc.) and is specified without directory path.</dd>
+       </di>
+       <di>
+         <dt>Page</dt><dd>If the source is a whole document, this specifies the page number.</dd>
+       </di>
+       <di>
+         <dt>From</dt><dd>For second-hand information, this indicates who the source was..</dd>
+       </di>
+       <di>
+         <dt>URL</dt><dd>A URL for the record. When generating an HTML card, DhG uses this
+           URL to convert the source text into a link.</dd>
+       </di>
+       <di>
+         <dt>Transcript</dt><dd>A transcript of the source record. The transcript can go over several lines
+          using the continutaion character '|'. I recommend putting the entire transcript on
+          continuation lines for readability.</dd>
+       </di>
+      </dl>
+    </div>
+   </div>
+
+   <div id="Annoyances">
+    <h2>Annoying "features"</h2>
+    <p>After creating or editing a card, the new information isn't in the database until you <i>reload</i>.</p>
+    <p>The <strong>CARDBASE</strong> variable has no default value; you are forced to set it before
+      you can create a new card.</p>
+    <p><strong>DhG</strong> tries to be as flexible as possible when reading the card files, so incorrect
+      keywords are often ignored with no error messages.
+   </div>
+
+</body>
+
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="" />
+  <meta name="author" content="TheLancashireman" />
+  <meta name="generator" content="vi" />
+
+  <link  href="/styles/family-history.css" rel="stylesheet" type="text/css" media="screen" /> 
+
+  <title>DhG quick guide</title>
+</head>
+
+<body>
+    <h1>DhG</h1>
+    <p>DhG is a suite of programs, libraries and other odds-and-ends that I use for maintaining
+       a database of people as part of my family history research. I'm making it available to
+       download free-of-charge on the off-chance that someone else might find it useful too.</p>
+    <p>DhG is a command-line program that has been designed to work on unix-like operating
+       systems such as GNU/Linux and FreeBSD. It might be possible to run it on a Mac (OS X)
+       because that's BSD-based too. It might also be possible to run it on Windows; I haven't
+       tried.</p>
+    <p>DhG is written in perl and therefore needs a standard perl interpreter. It also depends
+       on the <a href="http://template-toolkit.org/">Template toolkit</a>, which is available as
+       an optional extra on some GNU/Linux distros. On Ubuntu the package is called "libtemplate-perl".</p>
+
+    <h2>Download</h2>
+    <p>You can get the latest version by cloning the repository on
+      <a href="https://github.com/TheLancashireman/DhG">github</a> or by downloading a tarball.</p>
+
+    <h2>Installation (by cloning)</h2>
+    <p>Create an empty directory somewhere in your file system. Clone the git repository
+      into the directory.</p>
+
+    <h2>Installation (from tarball)</h2>
+    <p>Create an empty directory somewhere in your file system. Download the DhG tarball from the link
+       above and plonk it into the empty directory.</p>
+    <p>Open an xterm or some other Terminal window, cd to the directory you created and unpack the
+       DhG tarball. You can delete the tarball now:
+      <pre>
+        cd /whereever/you/put/DhG
+        tar xzvf DhG.tar.gz
+        rm DhG.tar.gz
+      </pre></p>
+
+    <h2>Setting up DhG</h2>
+    <p>If the directory <tt>/usr/local/lib/site_perl</tt> already exists, go to the next step. Create
+       the directory <tt>/usr/local/lib/site_perl</tt> --- you'll need root permissions, so:
+      <pre>
+        sudo mkdir /usr/local/lib/site_perl
+      </pre></p>
+    <p>Create symbolic links in /usr/local/lib/site_perl for all the perl-module files in the DhG
+       suite:
+      <pre>
+        sudo ln -s `pwd`/*.pm /usr/local/lib/site_perl
+      </pre>
+       There are other places you can put the modules if you don't have root permissions or
+       if you don't want to modify /usr/local/lib/site_perl. One way is to put the path to the
+       modules into the environment variable PERL5LIB.</p>
+    <p>Edit the file DhG. It's a shell script, and you need to configure the directories:<br/>
+        /path/to is the directory where you unpacked the DhG tarball.<br/>
+        ===WORKING-DIRECTORY=== is a working directory. This is where DhG puts all the generated output.<br/>
+        ===DATABASE-DIRECTORY=== is the database directory. DhG scans this directory and all its subditrectories
+        for files with the <tt>.card</tt> suffix.<br/>
+       As an example, here's my script:
+      <pre>
+        #!/bin/sh
+        cd /data/family-history/DhG-dir
+        exec /data/family-history/tools/DhG/Dh_GBrowse.pl /data/family-history/database
+      </pre>
+       You can do other useful things in this script. This is one possible place to set the
+       PERL5LIB environment variable. You can also select your editor; DhG uses the <tt>vi</tt>
+       editor by default, which isn't to everyone's taste. You can select your editor the
+       old-fashioned way by setting one of the environment variables <tt>VISUAL</tt> or
+       <tt>EDITOR</tt>. DhG first looks as <tt>VISUAL</tt> then at <tt>EDITOR</tt>. So
+      <pre>
+        VISUAL=gedit
+        export VISUAL
+      </pre>
+       in the script (before the 'exec' line) tells DhG to use gedit. IMPORTANT: Always use a text editor
+       for this job. Never use a word processor. One thing to note: DhG always suspends itself while the
+       editor is running. When the editor runs in the xterm this is what you'd expect, but with a GUI
+       editor like gedit, you can minimise the editor window and then it looks like DhG has crashed.
+       The hint here is the last line of output from DhG: if it says something like
+      <pre>
+        Editing /data/family-history/database/Bloggs/FredBloggs-99.card...
+      </pre>
+       then the editor is still running, so find it, save the file and close the editor (or quit
+       without saving - whatever is appropriate).</p>
+    <p>Finally, copy the DhG script to somewhere in your $PATH (~/bin is usually a good place).</p>
+
+    <h2>Invocation</h2>
+    <p>Make your xterm big enough. I use 120x75 characters. Type <tt>DhG</tt> at the prompt.
+       You should see something like:
+      <pre>
+help                     = Print this text
+list                     = List all people
+family &lt;person&gt;          = Print family of a single person
+descendants &lt;person&gt;     = Print all descendants of a single person
+ancestors &lt;person&gt;       = Print all ancestors of a single person
+search &lt;pattern&gt;         = Print name of people that match given terms
+find &lt;pattern&gt;           = Print name of people that match given terms
+quit                     = Close program
+edit &lt;person&gt;            = Edit a person's card
+vi                       = (alias for edit)
+reload                   = Reload the database
+set &lt;name&gt;=&lt;value&gt;       = Set a variable
+htmlcard &lt;person&gt;        = Output a card file in HTML
+htmlcard all             = Output a card file in HTML for every person in the database
+htmlcard public          = Output a card file in HTML for every "public" person in the database
+hc                       = (alias for htmlcard)
+htmldesc &lt;person&gt;        = Output a public descendant tree in HTML
+htmldesc @&lt;filename&gt;     = Output a public descendant tree in HTML for each person listed in the file
+hd                       = (alias for htmldesc)
+htmlprivdesc &lt;person&gt;    = Output a private descendant tree in HTML
+htmlprivdesc @&lt;filename&gt; = Output a private descendant tree in HTML for each person listed in the file
+hpd                      = (alias for htmlprivdesc)
+htmlanc                  = Output an ancestor tree (Ahnentafel) in HTML
+ha                       = (alias for htmlanc)
+
+(c) 2014  David Haworth (dave@fen-net.de; http://thelancashireman.org)
+DhG comes with ABSOLUTELY NO WARRANTY. It is free software, and you are welcome
+to redistribute it under certain conditions; please read the accompanying file
+gpl-3.0.txt for details.
+
+What now?
+      </pre>Have fun! Try creating your first person:
+      <pre>
+        new Fred Bloggs
+      </pre></p>
+    <p>There's a bit more detail in the <a href="guide.html">user's manual</a>.</p>
+   
+    <h2>Problems, bugs etc.</h2>
+    <p>If you run into problems or find a bug, send me an email using the address on the
+      <a href="http://thelancashireman.org/about.html">about</a> page at my website,
+      or by the usual github mechanisms.</p>
+
+</body>
+
+</html>
