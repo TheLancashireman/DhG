@@ -689,6 +689,11 @@ sub DhG_LoadCard_GetNextEvent
 		# Event is Misc: replace it with what it really is (which might be a phrase).
 		$event = $e_r;
 	}
+	elsif ( $event eq "1939" )
+	{
+		# Event is 1939 register: glue the bits back together
+		$event .=  " ".$e_r;
+	}
 
 	print STDOUT "DBG: Found event \"$date $event\" at $mark.\n" if ( $DhG_DebugLevel >= 100 );
 
