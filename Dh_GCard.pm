@@ -664,6 +664,10 @@ sub DhG_LoadCard_GetNextEvent
 	$date = DhG_FormatDate($e_d, "?", "full");
 
 	# DECISION: where the spouse goes (event or info) is decided by the template
+	# DECISION: apart from some exceptions, the entire rest of line is the event.
+	#           IMPLICATIONS: First word of event will be normalised
+	#                         Marriage is a special case
+    #                         Misc is a special case for backwards compatibility.
 	$event = $e_t;
 
 	if ( $event eq "Marriage" )
@@ -687,11 +691,12 @@ sub DhG_LoadCard_GetNextEvent
 	elsif ( $event eq "Misc" )
 	{
 		# Event is Misc: replace it with what it really is (which might be a phrase).
+		# This is just for backwards compatibility
 		$event = $e_r;
 	}
-	elsif ( $event eq "1939" )
+	else
 	{
-		# Event is 1939 register: glue the bits back together
+		# Join the first word (case-adjusted) onto the rest.
 		$event .=  " ".$e_r;
 	}
 
