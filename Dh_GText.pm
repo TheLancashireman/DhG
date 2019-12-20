@@ -167,7 +167,6 @@ sub DhG_NewPersonCard
 
 	if ( defined $template_vars )
 	{
-		# Omitted 3rd parameter to tt->process ==> output goes to stdout
 		if ( $tt->process("person-card.tmpl", $template_vars, $cardfullpath) )
 		{
 			DhG_EditFile($cardfullpath);
