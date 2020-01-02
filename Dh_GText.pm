@@ -119,7 +119,7 @@ sub DhG_TextDescTree
 	DhG_TextInit();
 	return if ( !defined $tt );
 
-	my $template_vars = DhG_GetDescendantTreeTemplateVars($id, $privacy);
+	my $template_vars = DhG_GetDescendantTreeTemplateVars($id, $privacy, 0);
 	my $filebase = DhG_GetFilebase($id);
 
 	# Omitted 3rd parameter to tt->process ==> output goes to stdout

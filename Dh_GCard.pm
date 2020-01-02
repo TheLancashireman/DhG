@@ -112,7 +112,6 @@ sub DhG_ReadFileIntoVariable;
 
 # Variables that can be changed with the set command.
 my $DhG_DebugLevel = 0;
-my $DhG_OutputFormat = "none";
 my $DhG_DateFormat = "raw";
 my $DhG_CardBase = undef;
 my $DhG_TextBase = "/data1/family-history/transcript";
@@ -192,11 +191,6 @@ sub DhG_SetVariable
 		if ( $varname eq "DBG" )
 		{
 			$DhG_DebugLevel = $varvalue;
-		}
-		elsif ( $varname eq "FORMAT" )
-		{
-			# Values: html, wikidot, ...?
-			$DhG_OutputFormat = $varvalue;
 		}
 		elsif ( $varname eq "DATE" )
 		{
@@ -1820,7 +1814,7 @@ sub DhG_AppendDescendantTree;	# Forward
 
 sub DhG_GetDescendantTreeTemplateVars
 {
-	my ($id, $privacy) = @_;
+	my ($id, $privacy, $html) = @_;
 	my ($name, $years, $nlines);
 	my @a_level = ();
 	my @a_name = ();
@@ -1832,7 +1826,7 @@ sub DhG_GetDescendantTreeTemplateVars
 	$name = DhG_GetName($id);
 	$years = DhG_GetYearRange($id);
 
-	$nlines = DhG_AppendDescendantTree($id, 0, $privacy, 0,
+	$nlines = DhG_AppendDescendantTree($id, 0, $privacy, 0, $html,
 													\@a_level, \@a_name, \@a_file, \@a_spname, \@a_spfile);
 
 	my $last_update = strftime("%Y-%m-%d %H:%M GMT", gmtime());
@@ -1856,7 +1850,7 @@ sub DhG_GetDescendantTreeTemplateVars
 sub DhG_AppendDescendantTree
 {
 	# The a_* variables are references to arrays.
-	my ($id, $level, $privacy, $index, $a_level, $a_name, $a_file, $a_spname, $a_spfile) = @_;
+	my ($id, $level, $privacy, $index, $html, $a_level, $a_name, $a_file, $a_spname, $a_spfile) = @_;
 
 	my ($name, $years, $printname, $file);
 	my %partner_by_date;
@@ -1867,16 +1861,25 @@ sub DhG_AppendDescendantTree
 	my %children;
 	my $c_id;
 	my $n_spouses;
+	my $print_id = 1;
+	my $datefmt = undef;	# Use default
+
+	if ( $html )
+	{
+		$print_id = 0;
+		$datefmt = "yearonly"
+	}
 
 	# Get the name and the birth and death dates.
 	$name = DhG_GetName($id);
-	$years = DhG_GetYearRange($id);
-
-	print STDOUT "DBG: AppendDescendantTree $name $id\n" if ( $DhG_DebugLevel >= 30 );
+	#$years = DhG_GetYearRange($id);
 
 	# Construct name for output.
-	$printname = $name;
-	$printname .= " ($years)" if ( defined $years && $years ne "" );
+	#$printname = $name;
+	#$printname .= " ($years)" if ( defined $years && $years ne "" );
+	$printname = DhG_GetPersonInfoLine($id, $print_id, $datefmt);
+
+	print STDOUT "DBG: AppendDescendantTree $name [$id]\n" if ( $DhG_DebugLevel >= 30 );
 
 	# Base filename
 	$file = DhG_GetFilebase($id);
@@ -1993,23 +1996,21 @@ sub DhG_AppendDescendantTree
 		$npartner++;
 		$partner_idx = $partner_by_date{$partnerdate};
 
-		my ($p_name, $p_id, $p_years, $p_printname, $p_file);
+		my ($p_name, $p_id, $p_printname, $p_file);
 		$p_name = $spouses[$partner_idx];
 		$p_id = $sp_ids[$partner_idx];
 #		print STDERR "$partner_idx $p_name [$p_id] $partnerdate\n";
 
 		if ( $p_id eq "-" )
 		{
-			$p_years = undef;
 			$p_file = undef;
+			$p_printname = $p_name;
 		}
 		else
 		{
-			$p_years = DhG_GetYearRange($p_id);
 			$p_file = DhG_GetFilebase($p_id);
+			$p_printname = DhG_GetPersonInfoLine($p_id, $print_id, $datefmt);
 		}
-		$p_printname = $p_name;
-		$p_printname .= " ($p_years)" if ( defined $p_years && $p_years ne "" );
 
 		# Append the person and spouse to the arrays.
 		${$a_level}[$index] = $level;
@@ -2046,7 +2047,7 @@ sub DhG_AppendDescendantTree
 					if ( ( defined $DhG_Father_Name[$c_id] && $DhG_Father_Name[$c_id] eq $p_name ) ||
 						 ( defined $DhG_Mother_Name[$c_id] && $DhG_Mother_Name[$c_id] eq $p_name ) )
 					{
-						$index = DhG_AppendDescendantTree($c_id, $level+1, $privacy, $index,
+						$index = DhG_AppendDescendantTree($c_id, $level+1, $privacy, $index, $html,
 																$a_level, $a_name, $a_file, $a_spname, $a_spfile);
 					}
 				}
@@ -2597,7 +2598,7 @@ sub DhG_PrintAncestors
 	my ($father, $fid);
 	my ($mother, $mid);
 
-	$personinfo = DhG_GetPersonInfoLine($id, 1);
+	$personinfo = DhG_GetPersonInfoLine($id, 1);	# Use default date format
 
 	print "$indent$tag$personinfo\n";
 
@@ -2693,7 +2694,7 @@ sub DhG_PrintPersonList
 	for ( $i = 0; $i < @list; $i++ )
 	{
 		my $id = $list[$i];
-		my $personinfo = DhG_GetPersonInfoLine($id, 1);
+		my $personinfo = DhG_GetPersonInfoLine($id, 1);		# Use default date format
 		print "$personinfo\n";
 	}
 }
@@ -2718,7 +2719,7 @@ sub DhG_Search
 # DhG_GetPersonInfoLine() - returns info-line (name, id, dob, dod) for person
 sub DhG_GetPersonInfoLine
 {
-	my ($uniq, $pr_uniq) = @_;
+	my ($uniq, $pr_uniq, $datefmt) = @_;
 	my $name = $DhG_Name[$uniq];
 	my ($dob, $dod);
 	my $infoline = "unknown";
@@ -2726,8 +2727,8 @@ sub DhG_GetPersonInfoLine
 	if ( defined $name )
 	{
 		# This person exists in the database
-		$dob = DhG_FormatDate($DhG_Birth_Date[$uniq], "?");
-		$dod = DhG_FormatDate($DhG_Death_Date[$uniq], "");
+		$dob = DhG_FormatDate($DhG_Birth_Date[$uniq], "?", $datefmt);
+		$dod = DhG_FormatDate($DhG_Death_Date[$uniq], "", $datefmt);
 
 		if ( $pr_uniq )
 		{

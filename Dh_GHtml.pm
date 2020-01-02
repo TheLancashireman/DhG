@@ -140,7 +140,7 @@ sub DhG_HtmlDescTree
 	DhG_HtmlInit();
 	return if ( !defined $tt );
 
-	my $template_vars = DhG_GetDescendantTreeTemplateVars($id, $privacy);
+	my $template_vars = DhG_GetDescendantTreeTemplateVars($id, $privacy, 1);
 	my $filebase = DhG_GetFilebase($id);
 
 	my $htmlfilename = "html/trees/";
