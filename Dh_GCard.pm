@@ -2603,6 +2603,8 @@ sub DhG_PrintAncestors
 	print "$indent$tag$personinfo\n";
 
 	$father = $DhG_Father_Name[$id];
+	$mother = $DhG_Mother_Name[$id];
+
 	if ( defined $father )
 	{
 		$fid = $DhG_Father_Id[$id];
@@ -2615,8 +2617,12 @@ sub DhG_PrintAncestors
 			print("$indent   f: $father\n");
 		}
 	}
+	elsif ( defined $mother )
+	{
+		# Always ensure both parent lines are printed even if only one is known
+		print("$indent   f: unknown\n");
+	}
 
-	$mother = $DhG_Mother_Name[$id];
 	if ( defined $mother )
 	{
 		$mid = $DhG_Mother_Id[$id];
@@ -2628,6 +2634,11 @@ sub DhG_PrintAncestors
 		{
 			print("$indent   m: $mother\n");
 		}
+	}
+	elsif ( defined $father )
+	{
+		# Always ensure both parent lines are printed even if only one is known
+		print("$indent   m: unknown\n");
 	}
 }
 
