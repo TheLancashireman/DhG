@@ -238,13 +238,13 @@
   </p>
   <hr/>
   <h3>Source images</h3>      
-  <table class="transcripts">
+  <table class="images">
 [% t = 0 -%]
 [% os = "even" -%]
 [% WHILE t < n_images -%]
-    <tr class="transcripts" id="image_[% t + 1 %]">
-      <td class="transcript-index-[% os %]">[% t + 1 %]</td>
-      <td class="transcript-text-[% os %]"><pre>[% image.$t %]</pre></td>
+    <tr class="images" id="image_[% t + 1 %]">
+      <td class="image-index-[% os %]">[% t + 1 %]</td>
+      <td class="image-text-[% os %]"><pre>[% image.$t %]</pre></td>
     </tr>
 [% t = t + 1 -%]
 [% IF ( os == "even" ); os = "odd"; ELSE; os = "even"; END -%]
