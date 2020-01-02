@@ -2597,8 +2597,7 @@ sub DhG_PrintAncestors
 	my ($father, $fid);
 	my ($mother, $mid);
 
-	$name = $DhG_Name[$id];
-	$personinfo = DhG_GetPersonInfoLine($id);
+	$personinfo = DhG_GetPersonInfoLine($id, 1);
 
 	print "$indent$tag$personinfo\n";
 
@@ -2694,7 +2693,7 @@ sub DhG_PrintPersonList
 	for ( $i = 0; $i < @list; $i++ )
 	{
 		my $id = $list[$i];
-		my $personinfo = DhG_GetPersonInfoLine($id);
+		my $personinfo = DhG_GetPersonInfoLine($id, 1);
 		print "$personinfo\n";
 	}
 }
@@ -2719,44 +2718,25 @@ sub DhG_Search
 # DhG_GetPersonInfoLine() - returns info-line (name, id, dob, dod) for person
 sub DhG_GetPersonInfoLine
 {
-	my ($name, $uniq) = @_;
-	my $id = undef;
+	my ($uniq, $pr_uniq) = @_;
+	my $name = $DhG_Name[$uniq];
 	my ($dob, $dod);
-	my $infoline = "Unknown";
+	my $infoline = "unknown";
 
-	if ( $name =~ m{^([0-9])} )
+	if ( defined $name )
 	{
-		# ID is given. If person exists, use that person, otherwise return "Unknown"
-		$id = $name;
+		# This person exists in the database
+		$dob = DhG_FormatDate($DhG_Birth_Date[$uniq], "?");
+		$dod = DhG_FormatDate($DhG_Death_Date[$uniq], "");
 
-		if ( defined $DhG_Name[$id] )
+		if ( $pr_uniq )
 		{
-			$name = $DhG_Name[$id];
+			$infoline = "$name [$uniq]  ($dob - $dod)";
 		}
 		else
 		{
-			$id = undef;
+			$infoline = "$name  ($dob - $dod)";
 		}
-	}
-	else
-	{
-		# Name/Uniq give, Find the person. If not found, return "Name [Uniq]"
-		$id = DhG_FindPerson($name, $uniq);
-
-		if ( !defined $id )
-		{
-			$infoline = "$name";
-			$infoline .= " [$uniq]" if ( defined $uniq && $uniq ne "" );
-		}
-	}
-
-	if ( defined $id )
-	{
-		# This person exists in the database
-		$dob = DhG_FormatDate($DhG_Birth_Date[$id], "?");
-		$dod = DhG_FormatDate($DhG_Death_Date[$id], "");
-
-		$infoline = "$name [$id]  ($dob - $dod)";
 	}
 
 	return $infoline;
