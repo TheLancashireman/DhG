@@ -18,8 +18,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with DhG.  If not, see <http://www.gnu.org/licenses/>.
-#
-# $Id$
 
 package Dh_GCard;
 
@@ -629,7 +627,7 @@ sub DhG_LoadCard_FindFirstEvent
 # DhG_LoadCard_GetNextEvent() - extract the next event
 sub DhG_LoadCard_GetNextEvent
 {
-	my ($mark, $lref, $mode, $t_index, $tref) = @_;
+	my ($mark, $lref, $mode, $t_index, $tref, $im_index, $imref) = @_;
 	my ($date, $event, $info, $source) = ("", "", "", "");
     my ($spouse, $spouse_file) = ("", "");
 	my ($line);
@@ -742,7 +740,7 @@ sub DhG_LoadCard_GetNextEvent
 			}
 
 			# Return the line number of the next event and the data for this event.
-			return ($mark, $date, $event, $spouse, $spouse_file, $info, $source, $t_index);
+			return ($mark, $date, $event, $spouse, $spouse_file, $info, $source, $t_index, $im_index);
 		}
 		elsif ( $line =~ m{^\+} )
 		{
@@ -861,30 +859,40 @@ sub DhG_LoadCard_GetNextEvent
 					$in_transcript = 1;
 					$transcript_text = undef
 				}
-				elsif ( $line =~ m{^-File} )
+				elsif ( $line =~ m{^-File } )
 				{
 					# A file source. Does it specify a Transcript file with the ".text" suffix?
-					my ($transcript_type) = $line =~ m{^\-File (.*)$};
-					$transcript_type = DhG_Trim($transcript_type);
+					my ($source_type, $source_name) = $line =~ m{^\-File +([^ ]+) +(.*)$};
+					$source_type = DhG_Trim($source_type);
+					$source_name = DhG_Trim($source_name);
 
-					if ( $transcript_type =~ m{^Transcript .*\.text$} )
+					if ( lc($source_type) eq "transcript" )
 					{
-						# File is the correct type
-						my ($transcript_file) = $transcript_type =~ m{^Transcript (.*)$};
-						$transcript_file = DhG_Trim($transcript_file);
-						$transcript_text = DhG_ReadTranscriptFile($transcript_file);
-						if ( defined $transcript_text )
+						if ( $source_name =~ m{^.*\.text$} )
 						{
-							my $tline = "";
-							$tline .= "<pre>" if ( $mode eq "html" );
-							$tline .= $transcript_text;
-							$tline .= "</pre>" if ( $mode eq "html" );
-							$tline .= "\n";
-							${$tref}[$t_index] = $tline;
-							$t_index++;
-							$source_link[$source_nLinks++] = "<a href=\"#transcript_$t_index\">[transcript $t_index]</a>";
-							$transcript_text = undef
+							# Transcript file has the correct extension
+							$transcript_text = DhG_ReadTranscriptFile($source_name);
+							if ( defined $transcript_text )
+							{
+								my $tline = "";
+								$tline .= "<pre>" if ( $mode eq "html" );
+								$tline .= $transcript_text;
+								$tline .= "</pre>" if ( $mode eq "html" );
+								$tline .= "\n";
+								${$tref}[$t_index] = $tline;
+								$t_index++;
+								$source_link[$source_nLinks++] =
+									"<a href=\"#transcript_$t_index\">[transcript $t_index]</a>";
+								$transcript_text = undef
+							}
 						}
+					}
+					elsif ( lc($source_type) eq "image" )
+					{
+						${$imref}[$im_index] = $source_name;
+						$im_index++;
+						$source_link[$source_nLinks++] =
+							"<a href=\"#image_$im_index\">[image $im_index]</a>";
 					}
 				}
 			}
@@ -966,7 +974,7 @@ sub DhG_LoadCard_GetNextEvent
 	}
 
 	# Return (-1) to indicate end, and the data for this event.
-	return ((-1), $date, $event, $spouse, $spouse_file, $info, $source, $t_index);
+	return ((-1), $date, $event, $spouse, $spouse_file, $info, $source, $t_index, $im_index);
 }
 
 # DhG_ClearDatabase() - removes all records from database
@@ -1719,6 +1727,7 @@ sub DhG_GetCardTemplateVars
 
 	$n_events = 0;
 	$n_transcripts = 0;
+	$n_images = 0;
 	@e_date = ();
 	@e_type = ();
 	@e_spouse = ();
@@ -1726,12 +1735,14 @@ sub DhG_GetCardTemplateVars
 	@e_info = ();
 	@e_source = ();
 	@transcripts = ();
+	@images = ();
 
 	while ( $mark > 0 )
 	{
 		# Get 4 parts of event and marker for next (-1 ==> end).
-		($mark, $date, $event, $spouse, $spouse_file, $info, $source, $n_transcripts)
-				= DhG_LoadCard_GetNextEvent($mark, \@filelines, $mode, $n_transcripts, \@transcripts);
+		($mark, $date, $event, $spouse, $spouse_file, $info, $source, $n_transcripts, $n_images)
+				= DhG_LoadCard_GetNextEvent($mark, \@filelines, $mode, $n_transcripts, \@transcripts,
+															$n_images, \@images);
 
 		# Append each of the 4 parts of the event to the its respective array.
 		push(@e_date, $date);
@@ -1803,6 +1814,8 @@ sub DhG_GetCardTemplateVars
 		e_source		=> \@e_source,				# Sources for event
 		n_transcripts	=> $n_transcripts,			# No of transcripts
 		transcript		=> \@transcripts,			# Array of transcripts
+		n_images		=> $n_images,				# No of images
+		image			=> \@images,				# Array of images
 		last_update		=> $last_update				# Date/time of last update
 	};
 
