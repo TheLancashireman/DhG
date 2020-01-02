@@ -2745,7 +2745,7 @@ sub DhG_GetPersonInfoLine
 		$dob = DhG_FormatDate($DhG_Birth_Date[$id], "?");
 		$dod = DhG_FormatDate($DhG_Death_Date[$id], "");
 
-		$infoline = "$name ($id)  ($dob - $dod)";
+		$infoline = "$name [$id]  ($dob - $dod)";
 	}
 
 	return $infoline;
