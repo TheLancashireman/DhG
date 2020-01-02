@@ -887,7 +887,7 @@ sub DhG_LoadCard_GetNextEvent
 							}
 						}
 					}
-					elsif ( lc($source_type) eq "image" )
+					elsif ( lc($source_type) eq "image" || lc($source_type) eq "book" )
 					{
 						${$imref}[$im_index] = $source_name;
 						$im_index++;
