@@ -35,9 +35,9 @@ use Exporter();
 	DhG_Father_Id,		# Array mapping person ID to their father's ID
 	DhG_Mother_Name,	# Array mapping person ID to their mother's name
 	DhG_Mother_Id,		# Array mapping person ID to their mother's ID
-	DhG_Marriage_Dates,	# Array mapping person ID to their marriage dates (tokenised string)
-	DhG_Marriage_Names,	# Array mapping person ID to their spouses (tokenised string)
-	DhG_Marriage_Ids,	# Array mapping person ID to their spouses IDs (tokenised string)
+	DhG_Marriage_Dates,	# Array mapping person ID to their marriage/partnership dates (tokenised string)
+	DhG_Marriage_Names,	# Array mapping person ID to their partners (tokenised string)
+	DhG_Marriage_Ids,	# Array mapping person ID to their partners' IDs (tokenised string)
 	DhG_Birth_Date,		# Array mapping person ID to their birth date
 	DhG_Baptism_Date,	# Array mapping person ID to their baptism date
 	DhG_Death_Date,		# Array mapping person ID to their death date
@@ -508,7 +508,7 @@ sub DhG_LoadCard
 # DhG_LoadCard_Event() loads an event from a card file.
 # INTERNAL
 # Event line is in the form "DATE  EVENT   MORE-INFO"
-#    Since version 2, MORE-INFO is only for marriages.
+#    Since version 2, MORE-INFO is only for marriages and partnerships.
 sub DhG_LoadCard_Event
 {
 	my ($filename, $id, $evline) = @_;
@@ -527,9 +527,9 @@ sub DhG_LoadCard_Event
 		# Record date and place of baptism
 		$DhG_Baptism_Date[$id] = $date;
 	}
-	elsif ( $event eq "Marriage" )
+	elsif ( $event eq "Marriage" || $event eq "Partnership" )
 	{
-		# Record date of marriage and spouse. Trickier - there might be more than one!
+		# Record date of marriage/partnership and spouse/partner. Trickier - there might be more than one!
 		if ( $DhG_Marriage_Dates[$id] ne "" )
 		{
 			$DhG_Marriage_Dates[$id] .= "|";
@@ -658,11 +658,11 @@ sub DhG_LoadCard_GetNextEvent
 	# DECISION: where the spouse goes (event or info) is decided by the template
 	# DECISION: apart from some exceptions, the entire rest of line is the event.
 	#           IMPLICATIONS: First word of event will be normalised
-	#                         Marriage is a special case
+	#                         Marriage/partnership is a special case
     #                         Misc is a special case for backwards compatibility.
 	$event = $e_t;
 
-	if ( $event eq "Marriage" )
+	if ( $event eq "Marriage" || $event eq "Partnership" )
 	{
 		my ($spouse_name, $spouse_id) = DhG_ParseName($e_r);
 		if ( defined $spouse_id )
@@ -1271,7 +1271,7 @@ sub DhG_GetSpouses
 	}
 	else
 	{
-		print STDERR "No marriage ID string for $id $DhG_Name[$id]\n";
+		print STDERR "No marriage/partnership ID string for $id $DhG_Name[$id]\n";
 	}
 
 	return @spouses;
@@ -1808,7 +1808,7 @@ sub DhG_GetCardTemplateVars
 		n_events		=> $n_events,				# No of events
 		e_date			=> \@e_date,				# Dates of events
 		e_type			=> \@e_type,				# Types of events
-		e_spouse		=> \@e_spouse,				# Names of spouses for "Marriage" events
+		e_spouse		=> \@e_spouse,				# Names of spouses for "Marriage" and "Partnership" events
 		e_spousefile	=> \@e_spousefile,			# Filenames of spouses
 		e_info			=> \@e_info,				# More info from event
 		e_source		=> \@e_source,				# Sources for event
@@ -1897,7 +1897,7 @@ sub DhG_AppendDescendantTree
 	# Base filename
 	$file = DhG_GetFilebase($id);
 
-	# Now find a list of all the partners. Start with the marriages...
+	# Now find a list of all the partners. Start with the marriages/partnerships...
 	if ( defined $DhG_Marriage_Names[$id] )
 	{
 		# Convert names, dates and ids into arrays. Remember: the id might be "-"!

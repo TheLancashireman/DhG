@@ -69,6 +69,7 @@ EventTypes
 Birth
 Baptism
 Marriage  (spouse name on remainder of line)
+Partnership  (partner name on remainder of line)
 Census
 Death
 Burial
@@ -154,7 +155,7 @@ using the unique ID of the desired person from the list.
 generated. The gender is implied from the gender of other people with the same name. If not defined, it
 is left blank. After the card file is created, an editor is opened to fill in details.
 
-A person is "public" if the entire generation connected by sibling and marriage relationships to
+A person is "public" if the entire generation connected by sibling and marriage/partnership relationships to
 that person is also "public". A single living person in the generation will cause the entire
 generation to be "private". A single individual that is explicitly made "private" will also cause
 the entire generation to be private.
