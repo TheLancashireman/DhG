@@ -865,15 +865,20 @@ sub DhG_LoadCard_GetNextEvent
 					my ($source_type, $source_name) = $line =~ m{^\-File +([^ ]+) +(.*)$};
 					$source_type = DhG_Trim($source_type);
 					$source_name = DhG_Trim($source_name);
+#print "$source_type  $source_name\n";
 
 					if ( lc($source_type) eq "transcript" )
 					{
+#print "source type - transcript\n";
 						if ( $source_name =~ m{^.*\.text$} )
 						{
+#print "source name - *.text\n";
 							# Transcript file has the correct extension
 							$transcript_text = DhG_ReadTranscriptFile($source_name);
 							if ( defined $transcript_text )
 							{
+#print "transcript text found $source_name\n";
+#print "$transcript_text\n";
 								my $tline = "";
 								$tline .= "<pre>" if ( $mode eq "html" );
 								$tline .= $transcript_text;
@@ -885,15 +890,16 @@ sub DhG_LoadCard_GetNextEvent
 									"<a href=\"#transcript_$t_index\">[transcript $t_index]</a>";
 								$transcript_text = undef
 							}
+							else
+							{
+								print "Source file $source_name not found\n";
+							}
 						}
 					}
-					elsif ( lc($source_type) eq "image" || lc($source_type) eq "book" )
-					{
-						${$imref}[$im_index] = $source_name;
-						$im_index++;
-						$source_link[$source_nLinks++] =
-							"<a href=\"#image_$im_index\">[image $im_index]</a>";
-					}
+
+					${$imref}[$im_index] = "$source_type: $source_name";
+					$im_index++;
+					$source_link[$source_nLinks++] = "<a href=\"#image_$im_index\">[image $im_index]</a>";
 				}
 			}
 			else

@@ -84,7 +84,7 @@ sub DhG_HtmlCard
 
 	if ( $tt->process("person-card-html.tmpl", $template_vars, $htmlfilename) )
 	{
-		print STDOUT "Generated $htmlfilename\n";
+#		print STDOUT "Generated $htmlfilename\n";
 	}
 	else
 	{
