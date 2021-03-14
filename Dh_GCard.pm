@@ -573,6 +573,7 @@ sub DhG_LoadCard_All
 
 	@file_lines = ();
 
+#	print STDERR "Processing $cardname\n";
 	if ( open(DhG_INFILE, "<$cardname") )
 	{
 		while ( <DhG_INFILE> )
@@ -842,7 +843,7 @@ sub DhG_LoadCard_GetNextEvent
 
 			if ( $in_source )
 			{
-				# Secondary lines that are part of source records: we recognise URL and Transcript
+				# Secondary lines that are part of source records: we recognise URL, File and Transcript
 				if ( $line =~ m{^-URL} )
 				{
 					# A link to an arbitrary web site
