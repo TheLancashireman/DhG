@@ -2146,7 +2146,7 @@ sub DhG_GetAhnentafel
 {
 	# The a_* variables are references to arrays.
 	my ($id, $a_id, $a_name, $a_forename, $a_surname, $a_daterange, $a_file) = @_;
-	my ($n_generations, $start, $end, $n_found, $i, $pid);
+	my ($n_generations, $start, $end, $n_found, $i, $pid, $insert);
 	my ($father, $mother);
 	my ($name, $forename, $surname);
 
@@ -2162,7 +2162,7 @@ sub DhG_GetAhnentafel
 	${$a_daterange}[1] = DhG_GetYearRange($id);
 	${$a_file}[1] = DhG_GetFilebase($id);
 
-	print STDOUT "DBG: Ahnentafel $insert: $name\n" if ( $DhG_DebugLevel >= 0 );
+	print STDOUT "DBG: Ahnentafel 1: $name\n" if ( $DhG_DebugLevel >= 0 );
 
 	$n_found = 1;
 	$insert = 2;
