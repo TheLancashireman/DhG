@@ -1,25 +1,25 @@
 [%# ahnentafel-html.tmpl - a template for an ancestor tree (Ahnentafel) in HTML
 
     (c) 2014 David Haworth
-   
+
     This file is part of DhG.
-   
+
     DhG is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
     (at your option) any later version.
-   
+
     DhG is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-   
+
     You should have received a copy of the GNU General Public License
     along with DhG.  If not, see <http://www.gnu.org/licenses/>.
 
     $Id$
 -%]
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 [% CARDBASE = "/family-history/cards" -%]
 [% BLOCK person_block -%]
@@ -69,8 +69,9 @@
   <meta name="author" content="TheLancashireman" />
   <meta name="generator" content="DhG" />
 
-  <link  href="/styles/family-history.css" rel="stylesheet" type="text/css" media="screen" /> 
-  <link  href="/styles/ahnen-style.css" rel="stylesheet" type="text/css" media="screen" /> 
+  <link  href="/styles/family-history.css" rel="stylesheet" type="text/css" media="screen" />
+  <link  href="/styles/ahnen-style.css" rel="stylesheet" type="text/css" media="screen" />
+  <link  href="/styles/ahnentafel-z.css" rel="stylesheet" type="text/css" media="screen" />
   <script type="text/javascript" src="/styles/family-history.js"> </script>
 
   <title>The Lancashireman's family history</title>
@@ -100,7 +101,7 @@
   <h1>Ancestors of [% title_name %][% IF title_years != "" %] ([% title_years %])[% END -%]</h1>
   <hr/>
 
-  <div id="pagetorso" class="ahnentafel">
+  <div id="pagetorso" class="tree">
     <ul>
 [% index = 1 -%]
 [% indent = "" -%]
