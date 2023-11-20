@@ -1,6 +1,14 @@
 # DhG
 Dave's genealogy assistant
 
+# IMPORTANT
+
+This program has been superseded by DHG2.
+
+It can now be considered fully obsolete. It is present only for reference.
+
+# ====================================================================================================
+
 For user's guide see http://thelancashireman.org/software/DhG/index.html
 or look in the doc/ directory.
 
